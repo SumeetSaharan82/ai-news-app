@@ -4,7 +4,7 @@ Application settings and configuration management
 
 from typing import List
 from functools import lru_cache
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 
@@ -48,9 +48,11 @@ class Settings(BaseSettings):
     cache_ttl: int = Field(default=3600, env="CACHE_TTL")  # seconds
     news_fetch_interval: int = Field(default=1800, env="NEWS_FETCH_INTERVAL")  # seconds
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=False,
+        extra="ignore"
+    )
 
 
 @lru_cache()

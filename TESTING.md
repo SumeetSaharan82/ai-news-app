@@ -13,8 +13,8 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # 2. Install dependencies
-pip install -r requirements.txt
-pip install pytest pytest-asyncio pytest-cov
+pip3 install -r requirements.txt
+pip3 install pytest pytest-asyncio pytest-cov
 
 # 3. Set up environment variables
 cp .env.example .env
