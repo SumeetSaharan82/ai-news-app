@@ -1,0 +1,447 @@
+"""
+RSS Feed fetcher and parser for news sources
+Handles RSS parsing, link extraction, and article content retrieval
+"""
+
+import logging
+import asyncio
+from datetime import datetime
+from typing import List, Optional
+from xml.etree import ElementTree as ET
+
+import feedparser
+import aiohttp
+from bs4 import BeautifulSoup
+
+from backend.core.models import NewsArticle
+
+logger = logging.getLogger(__name__)
+
+
+class RSSSource:
+    """Configuration for RSS sources"""
+
+    def __init__(
+        self,
+        name: str,
+        url: str,
+        category: str,
+        region: str,
+        source_id: str,
+    ):
+        self.name = name
+        self.url = url
+        self.category = category
+        self.region = region
+        self.source_id = source_id
+
+
+# RSS Feed sources for Indian and Global news
+RSS_SOURCES = [
+    # Indian News Sources
+    RSSSource(
+        name="Times of India - Top Stories",
+        url="https://timesofindia.indiatimes.com/rssfeedstopstories.cms",
+        category="general",
+        region="india",
+        source_id="toi-rss",
+    ),
+    RSSSource(
+        name="NDTV News",
+        url="https://feeds.ndtv.com/ndtv/top-stories",
+        category="general",
+        region="india",
+        source_id="ndtv-rss",
+    ),
+    RSSSource(
+        name="The Hindu - Top Stories",
+        url="https://www.thehindu.com/news/national/feeder/default.rss",
+        category="general",
+        region="india",
+        source_id="hindu-rss",
+    ),
+    RSSSource(
+        name="Indian Express - India News",
+        url="https://indianexpress.com/feed/",
+        category="general",
+        region="india",
+        source_id="ie-rss",
+    ),
+    RSSSource(
+        name="Business Standard India",
+        url="https://www.business-standard.com/rss/home_page_top_stories.rss",
+        category="business",
+        region="india",
+        source_id="bs-rss",
+    ),
+    RSSSource(
+        name="Moneycontrol India",
+        url="https://www.moneycontrol.com/rss/latestnews.xml",
+        category="business",
+        region="india",
+        source_id="moneycontrol-rss",
+    ),
+    RSSSource(
+        name="Deccan Herald India",
+        url="https://www.deccanherald.com/rss/india.xml",
+        category="general",
+        region="india",
+        source_id="dh-rss",
+    ),
+    # Technology
+    RSSSource(
+        name="NDTV Tech",
+        url="https://feeds.ndtv.com/ndtv/tech",
+        category="technology",
+        region="india",
+        source_id="ndtv-tech-rss",
+    ),
+    RSSSource(
+        name="The Verge",
+        url="https://www.theverge.com/rss/index.xml",
+        category="technology",
+        region="global",
+        source_id="verge-rss",
+    ),
+    RSSSource(
+        name="TechCrunch",
+        url="https://techcrunch.com/feed/",
+        category="technology",
+        region="global",
+        source_id="tc-rss",
+    ),
+    # Sports
+    RSSSource(
+        name="Times of India - Sports",
+        url="https://timesofindia.indiatimes.com/rssfeeds/4719149.cms",
+        category="sports",
+        region="india",
+        source_id="toi-sports-rss",
+    ),
+    RSSSource(
+        name="ESPN Cricket",
+        url="https://www.espncricinfo.com/feeds/cricket_rss_feeds/v2_2_2_feed.xml",
+        category="sports",
+        region="global",
+        source_id="espn-cricket-rss",
+    ),
+    # Health & Science
+    RSSSource(
+        name="The Hindu - Science",
+        url="https://www.thehindu.com/sci-tech/feeder/default.rss",
+        category="science",
+        region="india",
+        source_id="hindu-science-rss",
+    ),
+    # Entertainment
+    RSSSource(
+        name="NDTV Entertainment",
+        url="https://feeds.ndtv.com/ndtv/entertainment",
+        category="entertainment",
+        region="india",
+        source_id="ndtv-ent-rss",
+    ),
+    # Global News
+    RSSSource(
+        name="BBC News",
+        url="http://feeds.bbc.co.uk/news/rss.xml",
+        category="general",
+        region="global",
+        source_id="bbc-rss",
+    ),
+    RSSSource(
+        name="Reuters Top News",
+        url="https://www.reuters.com/newmedia/rss/newsrss.rss",
+        category="general",
+        region="global",
+        source_id="reuters-rss",
+    ),
+    RSSSource(
+        name="CNN News",
+        url="http://feeds.cnn.com/rss/edition.rss",
+        category="general",
+        region="us",
+        source_id="cnn-rss",
+    ),
+    RSSSource(
+        name="The Guardian",
+        url="https://www.theguardian.com/international/rss",
+        category="general",
+        region="global",
+        source_id="guardian-rss",
+    ),
+]
+
+
+class RSSFetcher:
+    """Fetch and parse RSS feeds"""
+
+    def __init__(self):
+        self.session = None
+        self.timeout = 10
+        self.sources = {source.source_id: source for source in RSS_SOURCES}
+
+    async def __aenter__(self):
+        self.session = aiohttp.ClientSession()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.session:
+            await self.session.close()
+
+    async def fetch_feed(
+        self, source_id: str, limit: int = 10
+    ) -> List[NewsArticle]:
+        """
+        Fetch articles from a specific RSS feed
+
+        Args:
+            source_id: RSS source identifier
+            limit: Maximum articles to fetch
+
+        Returns:
+            List of NewsArticle objects
+        """
+        if source_id not in self.sources:
+            logger.warning(f"Unknown RSS source: {source_id}")
+            return []
+
+        source = self.sources[source_id]
+
+        try:
+            # Parse RSS feed
+            feed = feedparser.parse(source.url)
+
+            if feed.bozo:
+                logger.warning(f"RSS feed parsing error for {source.name}: {feed.bozo_exception}")
+
+            articles = []
+            for entry in feed.entries[:limit]:
+                try:
+                    article = self._parse_entry(entry, source)
+                    if article:
+                        articles.append(article)
+                except Exception as e:
+                    logger.warning(f"Error parsing RSS entry: {e}")
+                    continue
+
+            return articles
+
+        except asyncio.TimeoutError:
+            logger.error(f"Timeout fetching RSS feed: {source.name}")
+            return []
+        except Exception as e:
+            logger.error(f"Error fetching RSS feed {source.name}: {e}")
+            return []
+
+    async def fetch_all_sources(
+        self,
+        category: Optional[str] = None,
+        region: Optional[str] = None,
+        limit: int = 5,
+    ) -> List[NewsArticle]:
+        """
+        Fetch from multiple RSS sources
+
+        Args:
+            category: Filter by category
+            region: Filter by region
+            limit: Articles per source
+
+        Returns:
+            Combined list of articles from all matching sources
+        """
+        # Filter sources by category and region
+        filtered_sources = [
+            source
+            for source in RSS_SOURCES
+            if (category is None or source.category == category)
+            and (region is None or source.region == region)
+        ]
+
+        # Fetch from all sources concurrently
+        tasks = [
+            self.fetch_feed(source.source_id, limit) for source in filtered_sources
+        ]
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Combine results and remove duplicates
+        all_articles = []
+        for result in results:
+            if isinstance(result, list):
+                all_articles.extend(result)
+            elif isinstance(result, Exception):
+                logger.error(f"Error in fetch task: {result}")
+
+        # Remove duplicates based on URL
+        unique_articles = {}
+        for article in all_articles:
+            if article.url not in unique_articles:
+                unique_articles[article.url] = article
+
+        # Sort by published date (most recent first)
+        sorted_articles = sorted(
+            unique_articles.values(),
+            key=lambda x: x.published_at,
+            reverse=True,
+        )
+
+        return sorted_articles
+
+    async def extract_content_from_link(
+        self, url: str, source_id: str = "unknown"
+    ) -> tuple[str, str]:
+        """
+        Extract article content from a URL
+        Uses BeautifulSoup for parsing HTML content
+
+        Args:
+            url: Article URL
+            source_id: Source identifier for content extraction rules
+
+        Returns:
+            Tuple of (title, content)
+        """
+        try:
+            async with self.session.get(url, timeout=self.timeout) as resp:
+                if resp.status != 200:
+                    logger.warning(f"Failed to fetch content from {url}: {resp.status}")
+                    return "", ""
+
+                html = await resp.text()
+                soup = BeautifulSoup(html, "html.parser")
+
+                # Extract title
+                title = ""
+                title_tag = soup.find("h1") or soup.find("title")
+                if title_tag:
+                    title = title_tag.get_text(strip=True)
+
+                # Extract main content
+                content = self._extract_main_content(soup, source_id)
+
+                return title, content
+
+        except asyncio.TimeoutError:
+            logger.warning(f"Timeout extracting content from {url}")
+            return "", ""
+        except Exception as e:
+            logger.warning(f"Error extracting content from {url}: {e}")
+            return "", ""
+
+    def _parse_entry(self, entry, source: RSSSource) -> Optional[NewsArticle]:
+        """
+        Parse RSS entry to NewsArticle
+
+        Args:
+            entry: Parsed RSS entry
+            source: RSS source configuration
+
+        Returns:
+            NewsArticle object or None
+        """
+        try:
+            # Extract basic fields
+            title = entry.get("title", "")
+            url = entry.get("link", "")
+            description = entry.get("summary", "")
+
+            # Extract published date
+            published_at = datetime.utcnow()  # Default to now
+            if hasattr(entry, "published_parsed") and entry.published_parsed:
+                published_at = datetime(*entry.published_parsed[:6])
+            elif entry.get("published"):
+                try:
+                    published_at = datetime.fromisoformat(
+                        entry["published"].replace("Z", "+00:00")
+                    )
+                except:
+                    pass
+
+            # Extract image
+            image_url = ""
+            if entry.get("media_content"):
+                image_url = entry["media_content"][0].get("url", "")
+            elif entry.get("image"):
+                image_url = entry["image"].get("href", "")
+
+            # Extract author
+            author = entry.get("author", "")
+
+            if not title or not url:
+                return None
+
+            return NewsArticle(
+                title=title,
+                description=description,
+                content=description,
+                url=url,
+                image_url=image_url,
+                source_name=source.name,
+                source_id=source.source_id,
+                published_at=published_at,
+                category=source.category,
+                region=source.region,
+                author=author,
+            )
+
+        except Exception as e:
+            logger.warning(f"Error parsing RSS entry: {e}")
+            return None
+
+    def _extract_main_content(self, soup: BeautifulSoup, source_id: str) -> str:
+        """
+        Extract main article content using source-specific rules
+
+        Args:
+            soup: BeautifulSoup parser object
+            source_id: Source ID for extraction rules
+
+        Returns:
+            Extracted content text
+        """
+        # Common content selectors
+        content_selectors = [
+            "article",
+            "main",
+            ".article-content",
+            ".post-content",
+            ".entry-content",
+            ".content",
+            "div[class*='content']",
+            "div[class*='article']",
+        ]
+
+        # Source-specific selectors
+        source_selectors = {
+            "toi-rss": ["div.articlebodydesc"],
+            "ndtv-rss": ["div.pText"],
+            "hindu-rss": ["div.article-full-body"],
+            "ie-rss": ["div.article_content"],
+            "bbc-rss": ["article", "div#story-body"],
+            "reuters-rss": ["article"],
+        }
+
+        # Try source-specific selectors first
+        if source_id in source_selectors:
+            for selector in source_selectors[source_id]:
+                content = soup.select_one(selector)
+                if content:
+                    return content.get_text(separator="\n", strip=True)
+
+        # Try common selectors
+        for selector in content_selectors:
+            content = soup.select_one(selector)
+            if content:
+                # Remove script and style tags
+                for script in content(["script", "style"]):
+                    script.decompose()
+                return content.get_text(separator="\n", strip=True)
+
+        # Fallback: get body text
+        body = soup.find("body")
+        if body:
+            return body.get_text(separator="\n", strip=True)
+
+        return ""
