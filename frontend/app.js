@@ -342,15 +342,22 @@ function showArticleModal(article) {
     const content = document.getElementById('articleContent');
     const openInNewTabBtn = document.getElementById('openInNewTabBtn');
     
+    // Clean up content (remove HTML tags for better display)
+    const cleanDescription = article.description ? article.description.replace(/<[^>]*>/g, '') : 'No description available';
+    const cleanContent = article.content ? article.content.replace(/<[^>]*>/g, '') : '';
+    
     content.innerHTML = `
         ${article.image_url ? `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">` : ''}
-        <h2>${article.title}</h2>
+        <h2 class="article-headline">${article.title}</h2>
         <div class="article-meta">
-            <span><strong>Source:</strong> ${article.source}</span>
-            <span><strong>Published:</strong> ${formatDate(article.published_at)}</span>
+            <span><strong>📰 Source:</strong> ${article.source}</span>
+            <span><strong>📅 Published:</strong> ${formatDate(article.published_at)}</span>
+            <span><strong>🏷️ Category:</strong> ${article.category}</span>
         </div>
-        <p>${article.description || 'No description available'}</p>
-        ${article.content ? `<p>${article.content}</p>` : ''}
+        <div class="article-body">
+            <p class="article-description">${cleanDescription}</p>
+            ${cleanContent ? `<p class="article-full-content">${cleanContent}</p>` : ''}
+        </div>
     `;
     
     openInNewTabBtn.onclick = () => window.open(article.url, '_blank');
@@ -438,13 +445,69 @@ async function loadCurrentUser() {
                 document.getElementById('analysisSection').classList.remove('hidden');
                 loadNews();
             } else {
-                // User needs to set preferences
-                console.log('No preferences found, showing preference modal');
-                showPreferenceModal();
+                // Set default preferences: all categories + global region
+                console.log('No preferences found, setting defaults');
+                await setDefaultPreferences();
             }
         }
     } catch (error) {
         console.error('Error loading user:', error);
+    }
+}
+
+// Set default preferences (all categories + global region)
+async function setDefaultPreferences() {
+    try {
+        // Get all available categories
+        const response = await fetch(`${API_BASE_URL}/categories`);
+        const data = await response.json();
+        const allCategories = Array.isArray(data) ? data : (data.categories || []);
+        
+        // Set default preferences
+        const defaultPreferences = {
+            categories: allCategories,
+            region: 'global'
+        };
+        
+        console.log('Setting default preferences:', defaultPreferences);
+        
+        // Save default preferences to backend
+        const saveResponse = await fetch(`${API_BASE_URL}/users/preferences`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(defaultPreferences)
+        });
+        
+        if (saveResponse.ok) {
+            selectedCategories = allCategories;
+            selectedRegion = 'global';
+            currentUser.preferences = defaultPreferences;
+            
+            document.getElementById('newsSection').classList.remove('hidden');
+            document.getElementById('analysisSection').classList.remove('hidden');
+            
+            console.log('Default preferences set successfully');
+            loadNews();
+        } else {
+            console.error('Failed to set default preferences');
+            // Fallback: load news with defaults anyway
+            selectedCategories = allCategories;
+            selectedRegion = 'global';
+            document.getElementById('newsSection').classList.remove('hidden');
+            document.getElementById('analysisSection').classList.remove('hidden');
+            loadNews();
+        }
+    } catch (error) {
+        console.error('Error setting default preferences:', error);
+        // Fallback: load news with hardcoded defaults
+        selectedCategories = ['general', 'technology', 'business', 'sports', 'entertainment', 'health', 'science', 'politics'];
+        selectedRegion = 'global';
+        document.getElementById('newsSection').classList.remove('hidden');
+        document.getElementById('analysisSection').classList.remove('hidden');
+        loadNews();
     }
 }
 
