@@ -1,6 +1,6 @@
 # AI News App
 
-An AI-powered news aggregation and analysis platform that fetches news from multiple sources (APIs and RSS feeds), extracts content, and processes it with LLMs to provide clean, factual summaries without opinions.
+An AI-powered news aggregation and analysis platform that fetches news from multiple sources (APIs and RSS feeds), extracts content, and processes it with LLMs to provide clean, factual summaries without opinions....
 
 ## 🚀 Features
 
