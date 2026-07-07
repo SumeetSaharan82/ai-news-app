@@ -110,6 +110,27 @@ RSS_SOURCES = [
         region="global",
         source_id="tc-rss",
     ),
+    RSSSource(
+        name="Ars Technica",
+        url="https://feeds.arstechnica.com/arstechnica/index",
+        category="technology",
+        region="us",
+        source_id="ars-rss",
+    ),
+    RSSSource(
+        name="Wired",
+        url="https://www.wired.com/feed/rss",
+        category="technology",
+        region="us",
+        source_id="wired-rss",
+    ),
+    RSSSource(
+        name="Engadget",
+        url="https://www.engadget.com/rss.xml",
+        category="technology",
+        region="us",
+        source_id="engadget-rss",
+    ),
     # Sports
     RSSSource(
         name="Times of India - Sports",
@@ -267,6 +288,27 @@ RSS_SOURCES = [
         category="general",
         region="us",
         source_id="cnn-rss",
+    ),
+    RSSSource(
+        name="Bloomberg",
+        url="https://feeds.bloomberg.com/markets/news.rss",
+        category="finance",
+        region="us",
+        source_id="bloomberg-rss",
+    ),
+    RSSSource(
+        name="CNBC",
+        url="https://www.cnbc.com/id/100003114/device/rss/rss.html",
+        category="finance",
+        region="us",
+        source_id="cnbc-rss",
+    ),
+    RSSSource(
+        name="Yahoo Finance",
+        url="https://finance.yahoo.com/news/rssindex",
+        category="finance",
+        region="us",
+        source_id="yahoo-finance-rss",
     ),
     RSSSource(
         name="The Guardian",

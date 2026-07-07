@@ -340,6 +340,8 @@ async function savePreferences() {
         return;
     }
     
+    console.log('Saving preferences - Categories:', preferenceCategories, 'Region:', preferenceRegion);
+    
     try {
         const response = await fetch(`${API_BASE_URL}/users/preferences`, {
             method: 'PUT',
@@ -353,15 +355,22 @@ async function savePreferences() {
             })
         });
         
+        console.log('Save response status:', response.status);
+        
         if (response.ok) {
             selectedCategories = preferenceCategories;
             selectedRegion = preferenceRegion;
             closePreferenceModal();
             document.getElementById('newsSection').classList.remove('hidden');
             document.getElementById('analysisSection').classList.remove('hidden');
-            loadNews();
+            
+            // Force news reload with new preferences
+            console.log('Triggering news reload with new preferences...');
+            await loadNews();
+            
             alert('Preferences saved successfully!');
         } else {
+            console.error('Failed to save preferences - Response:', await response.text());
             alert('Failed to save preferences');
         }
     } catch (error) {
@@ -449,7 +458,11 @@ async function updatePreferences() {
             currentUser.preferences.region = profileRegion;
             console.log('Preferences updated successfully - Selected Region:', selectedRegion);
             closeProfileModal();
-            loadNews();
+            
+            // Force news reload with new preferences
+            console.log('Triggering news reload with new preferences...');
+            await loadNews();
+            
             alert('Preferences updated successfully!');
         } else {
             console.error('Failed to update preferences - Response:', await response.text());
