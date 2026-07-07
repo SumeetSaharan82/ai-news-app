@@ -13,6 +13,10 @@ let preferenceRegion = 'global';
 let profileCategories = [];
 let profileRegion = 'global';
 
+// News cache for efficient loading
+const newsCache = new Map(); // Key: category-region, Value: {articles, timestamp}
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+
 // Category Icons
 const categoryIcons = {
     'general': '📰',
@@ -169,7 +173,7 @@ function selectProfileRegion(region, element) {
     element.classList.add('selected');
 }
 
-// Load News
+// Load News for all selected categories
 async function loadNews() {
     if (selectedCategories.length === 0) {
         showError('Please select at least one category');
@@ -179,34 +183,57 @@ async function loadNews() {
     showLoading(true);
     hideError();
     
+    // Map region codes to full names
+    const regionMap = {
+        'in': 'india',
+        'us': 'us',
+        'gb': 'gb',
+        'global': 'global'
+    };
+    const region = regionMap[selectedRegion] || selectedRegion;
+    
+    console.log('Loading news for all categories - Categories:', selectedCategories, 'Region:', region);
+    
     try {
-        const category = selectedCategories[0]; // Use first selected category
-        // Map region codes to full names
-        const regionMap = {
-            'in': 'india',
-            'us': 'us',
-            'gb': 'gb',
-            'global': 'global'
-        };
-        const region = regionMap[selectedRegion] || selectedRegion;
+        // Fetch news for each category
+        const newsPromises = selectedCategories.map(async (category) => {
+            const cacheKey = `${category}-${region}`;
+            
+            // Check cache first
+            const cached = newsCache.get(cacheKey);
+            if (cached && (Date.now() - cached.timestamp) < CACHE_EXPIRY) {
+                console.log(`Using cached news for ${category}`);
+                return { category, articles: cached.articles };
+            }
+            
+            // Fetch from API
+            console.log(`Fetching news for ${category} from API`);
+            const response = await fetch(
+                `${API_BASE_URL}/news?category=${category}&region=${region}&limit=12`
+            );
+            const data = await response.json();
+            
+            // Cache the results
+            newsCache.set(cacheKey, {
+                articles: data.articles || [],
+                timestamp: Date.now()
+            });
+            
+            return { category, articles: data.articles || [] };
+        });
         
-        console.log('Loading news - Category:', category, 'Region:', region, 'Original region:', selectedRegion);
+        const results = await Promise.all(newsPromises);
         
-        const response = await fetch(
-            `${API_BASE_URL}/news?category=${category}&region=${region}&limit=12`
-        );
-        const data = await response.json();
+        // Display news in category sections
+        displayNewsByCategory(results);
         
-        console.log('News API response:', data);
-        
-        displayNews(data.articles || []);
-        
-        // Update header to show all selected categories and proper region name
+        // Update header
         const categoryNames = selectedCategories.map(cat => 
             cat.charAt(0).toUpperCase() + cat.slice(1)
         ).join(', ');
         document.getElementById('newsTitle').textContent = 
             `${categoryNames} News - ${getRegionName(selectedRegion)}`;
+        
     } catch (error) {
         console.error('Error loading news:', error);
         showError('Failed to load news. Please try again.');
@@ -215,7 +242,64 @@ async function loadNews() {
     }
 }
 
-// Display News
+// Display News by Category
+function displayNewsByCategory(results) {
+    console.log('Displaying news by category:', results);
+    const newsContainer = document.getElementById('newsContainer');
+    if (!newsContainer) {
+        console.error('newsContainer element not found!');
+        return;
+    }
+    newsContainer.innerHTML = '';
+    
+    results.forEach(({ category, articles }) => {
+        // Create category section
+        const categorySection = document.createElement('div');
+        categorySection.className = 'category-section';
+        
+        const categoryTitle = document.createElement('h3');
+        categoryTitle.className = 'category-title';
+        categoryTitle.innerHTML = `${categoryIcons[category] || '📰'} ${category.charAt(0).toUpperCase() + category.slice(1)}`;
+        categorySection.appendChild(categoryTitle);
+        
+        if (articles.length === 0) {
+            const noArticles = document.createElement('p');
+            noArticles.className = 'no-articles';
+            noArticles.textContent = 'No articles found';
+            categorySection.appendChild(noArticles);
+        } else {
+            const categoryGrid = document.createElement('div');
+            categoryGrid.className = 'category-grid';
+            
+            articles.forEach(article => {
+                const newsCard = document.createElement('div');
+                newsCard.className = 'news-card';
+                newsCard.innerHTML = `
+                    ${article.image_url ? `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">` : ''}
+                    <div class="news-card-content">
+                        <span class="category">${article.category}</span>
+                        <h3 class="title">${article.title}</h3>
+                        <p class="description">${article.description || 'No description available'}</p>
+                        <div class="meta">
+                            <span class="source">${article.source}</span>
+                            <span class="date">${formatDate(article.published_at)}</span>
+                        </div>
+                    </div>
+                `;
+                newsCard.addEventListener('click', () => window.open(article.url, '_blank'));
+                categoryGrid.appendChild(newsCard);
+            });
+            
+            categorySection.appendChild(categoryGrid);
+        }
+        
+        newsContainer.appendChild(categorySection);
+    });
+    
+    console.log('News displayed by category successfully');
+}
+
+// Display News (legacy function for single category)
 function displayNews(articles) {
     console.log('Displaying articles:', articles);
     const newsGrid = document.getElementById('newsGrid');
@@ -378,6 +462,11 @@ async function savePreferences() {
         if (response.ok) {
             selectedCategories = preferenceCategories;
             selectedRegion = preferenceRegion;
+            
+            // Clear cache when preferences change
+            newsCache.clear();
+            console.log('Cache cleared due to preference change');
+            
             closePreferenceModal();
             document.getElementById('newsSection').classList.remove('hidden');
             document.getElementById('analysisSection').classList.remove('hidden');
@@ -474,6 +563,11 @@ async function updatePreferences() {
             selectedRegion = profileRegion;
             currentUser.preferences.categories = profileCategories;
             currentUser.preferences.region = profileRegion;
+            
+            // Clear cache when preferences change
+            newsCache.clear();
+            console.log('Cache cleared due to preference change');
+            
             console.log('Preferences updated successfully - Selected Region:', selectedRegion);
             closeProfileModal();
             
