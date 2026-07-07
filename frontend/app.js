@@ -8,6 +8,10 @@ let selectedCategories = [];
 let selectedRegion = 'global';
 let authToken = localStorage.getItem('authToken');
 let currentUser = null;
+let preferenceCategories = [];
+let preferenceRegion = 'global';
+let profileCategories = [];
+let profileRegion = 'global';
 
 // Category Icons
 const categoryIcons = {
@@ -23,125 +27,146 @@ const categoryIcons = {
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
-    loadCategories();
-    loadRegions();
     setupEventListeners();
     checkAuthStatus();
 });
 
-// Load Categories
-async function loadCategories() {
+// Load Categories for Preference Modal
+async function loadPreferenceCategories() {
     try {
-        console.log('Loading categories from:', `${API_BASE_URL}/categories`);
         const response = await fetch(`${API_BASE_URL}/categories`);
         const data = await response.json();
         
-        console.log('Categories data:', data);
+        const categoryGrid = document.getElementById('preferenceCategoryGrid');
+        const profileCategoryGrid = document.getElementById('profileCategoryGrid');
         
-        const categoryGrid = document.getElementById('categoryGrid');
-        if (!categoryGrid) {
-            console.error('categoryGrid element not found!');
+        if (!categoryGrid || !profileCategoryGrid) {
+            console.error('Preference category grids not found!');
             return;
         }
-        categoryGrid.innerHTML = '';
         
-        // Handle both array response and object with categories property
+        categoryGrid.innerHTML = '';
+        profileCategoryGrid.innerHTML = '';
+        
         const categories = Array.isArray(data) ? data : (data.categories || []);
         
         categories.forEach(category => {
-            const categoryItem = document.createElement('div');
-            categoryItem.className = 'category-item';
-            categoryItem.dataset.category = category;
-            categoryItem.innerHTML = `
+            // For preference modal
+            const prefItem = document.createElement('div');
+            prefItem.className = 'category-item';
+            prefItem.dataset.category = category;
+            prefItem.innerHTML = `
                 <div class="icon">${categoryIcons[category] || '📰'}</div>
                 <div class="name">${category.charAt(0).toUpperCase() + category.slice(1)}</div>
             `;
-            categoryItem.addEventListener('click', () => toggleCategory(category, categoryItem));
-            categoryGrid.appendChild(categoryItem);
+            prefItem.addEventListener('click', () => togglePreferenceCategory(category, prefItem));
+            categoryGrid.appendChild(prefItem);
+            
+            // For profile modal
+            const profileItem = document.createElement('div');
+            profileItem.className = 'category-item';
+            profileItem.dataset.category = category;
+            profileItem.innerHTML = `
+                <div class="icon">${categoryIcons[category] || '📰'}</div>
+                <div class="name">${category.charAt(0).toUpperCase() + category.slice(1)}</div>
+            `;
+            profileItem.addEventListener('click', () => toggleProfileCategory(category, profileItem));
+            profileCategoryGrid.appendChild(profileItem);
         });
-        
-        console.log('Categories rendered successfully');
     } catch (error) {
-        console.error('Error loading categories:', error);
-        showError('Failed to load categories');
+        console.error('Error loading preference categories:', error);
     }
 }
 
-// Load Regions
-async function loadRegions() {
+// Load Regions for Preference Modal
+async function loadPreferenceRegions() {
     try {
-        console.log('Loading regions from:', `${API_BASE_URL}/regions`);
         const response = await fetch(`${API_BASE_URL}/regions`);
         const data = await response.json();
         
-        console.log('Regions data:', data);
+        const regionGrid = document.getElementById('preferenceRegionGrid');
+        const profileRegionGrid = document.getElementById('profileRegionGrid');
         
-        const regionGrid = document.getElementById('regionGrid');
-        if (!regionGrid) {
-            console.error('regionGrid element not found!');
+        if (!regionGrid || !profileRegionGrid) {
+            console.error('Preference region grids not found!');
             return;
         }
-        regionGrid.innerHTML = '';
         
-        // Handle both array response and object with regions property
+        regionGrid.innerHTML = '';
+        profileRegionGrid.innerHTML = '';
+        
         const regions = Array.isArray(data) ? data : (data.regions || []);
         
         regions.forEach(region => {
-            const regionItem = document.createElement('div');
-            regionItem.className = 'region-item';
-            regionItem.dataset.region = region;
-            regionItem.innerHTML = `
+            // For preference modal
+            const prefItem = document.createElement('div');
+            prefItem.className = 'region-item';
+            prefItem.dataset.region = region;
+            prefItem.innerHTML = `
                 <div class="name">${region.charAt(0).toUpperCase() + region.slice(1)}</div>
             `;
-            regionItem.addEventListener('click', () => selectRegion(region, regionItem));
-            regionGrid.appendChild(regionItem);
+            prefItem.addEventListener('click', () => selectPreferenceRegion(region, prefItem));
+            regionGrid.appendChild(prefItem);
+            
+            // For profile modal
+            const profileItem = document.createElement('div');
+            profileItem.className = 'region-item';
+            profileItem.dataset.region = region;
+            profileItem.innerHTML = `
+                <div class="name">${region.charAt(0).toUpperCase() + region.slice(1)}</div>
+            `;
+            profileItem.addEventListener('click', () => selectProfileRegion(region, profileItem));
+            profileRegionGrid.appendChild(profileItem);
         });
-        
-        // Select global by default
-        const globalItem = regionGrid.querySelector('[data-region="global"]');
-        if (globalItem) {
-            selectRegion('global', globalItem);
-        }
-        
-        console.log('Regions rendered successfully');
     } catch (error) {
-        console.error('Error loading regions:', error);
-        showError('Failed to load regions');
+        console.error('Error loading preference regions:', error);
     }
 }
 
-// Toggle Category Selection
-function toggleCategory(category, element) {
-    const index = selectedCategories.indexOf(category);
+// Toggle Preference Category Selection
+function togglePreferenceCategory(category, element) {
+    const index = preferenceCategories.indexOf(category);
     
     if (index > -1) {
-        selectedCategories.splice(index, 1);
+        preferenceCategories.splice(index, 1);
         element.classList.remove('selected');
     } else {
-        selectedCategories.push(category);
+        preferenceCategories.push(category);
         element.classList.add('selected');
-    }
-    
-    // Auto-load news if categories selected
-    if (selectedCategories.length > 0) {
-        loadNews();
     }
 }
 
-// Select Region
-function selectRegion(region, element) {
-    selectedRegion = region;
+// Toggle Profile Category Selection
+function toggleProfileCategory(category, element) {
+    const index = profileCategories.indexOf(category);
     
-    document.querySelectorAll('.region-item').forEach(item => {
+    if (index > -1) {
+        profileCategories.splice(index, 1);
+        element.classList.remove('selected');
+    } else {
+        profileCategories.push(category);
+        element.classList.add('selected');
+    }
+}
+
+// Select Preference Region
+function selectPreferenceRegion(region, element) {
+    preferenceRegion = region;
+    
+    document.querySelectorAll('#preferenceRegionGrid .region-item').forEach(item => {
         item.classList.remove('selected');
     });
-    
     element.classList.add('selected');
+}
+
+// Select Profile Region
+function selectProfileRegion(region, element) {
+    profileRegion = region;
     
-    // Reload news with new region
-    if (selectedCategories.length > 0) {
-        loadNews();
-    }
+    document.querySelectorAll('#profileRegionGrid .region-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    element.classList.add('selected');
 }
 
 // Load News
@@ -156,14 +181,32 @@ async function loadNews() {
     
     try {
         const category = selectedCategories[0]; // Use first selected category
+        // Map region codes to full names
+        const regionMap = {
+            'in': 'india',
+            'us': 'us',
+            'gb': 'gb',
+            'global': 'global'
+        };
+        const region = regionMap[selectedRegion] || selectedRegion;
+        
+        console.log('Loading news - Category:', category, 'Region:', region, 'Original region:', selectedRegion);
+        
         const response = await fetch(
-            `${API_BASE_URL}/news?category=${category}&region=${selectedRegion}&limit=12`
+            `${API_BASE_URL}/news?category=${category}&region=${region}&limit=12`
         );
         const data = await response.json();
         
+        console.log('News API response:', data);
+        
         displayNews(data.articles || []);
+        
+        // Update header to show all selected categories
+        const categoryNames = selectedCategories.map(cat => 
+            cat.charAt(0).toUpperCase() + cat.slice(1)
+        ).join(', ');
         document.getElementById('newsTitle').textContent = 
-            `${category.charAt(0).toUpperCase() + category.slice(1)} News - ${selectedRegion.toUpperCase()}`;
+            `${categoryNames} News - ${selectedRegion.toUpperCase()}`;
     } catch (error) {
         console.error('Error loading news:', error);
         showError('Failed to load news. Please try again.');
@@ -174,7 +217,12 @@ async function loadNews() {
 
 // Display News
 function displayNews(articles) {
+    console.log('Displaying articles:', articles);
     const newsGrid = document.getElementById('newsGrid');
+    if (!newsGrid) {
+        console.error('newsGrid element not found!');
+        return;
+    }
     newsGrid.innerHTML = '';
     
     if (articles.length === 0) {
@@ -200,6 +248,8 @@ function displayNews(articles) {
         newsCard.addEventListener('click', () => window.open(article.url, '_blank'));
         newsGrid.appendChild(newsCard);
     });
+    
+    console.log('News cards rendered successfully');
 }
 
 // Format Date
@@ -222,9 +272,18 @@ function checkAuthStatus() {
     if (authToken) {
         document.getElementById('loginBtn').classList.add('hidden');
         document.getElementById('registerBtn').classList.add('hidden');
+        document.getElementById('profileBtn').classList.remove('hidden');
         document.getElementById('logoutBtn').classList.remove('hidden');
-        document.getElementById('personalizedSection').classList.remove('hidden');
+        document.getElementById('welcomeSection').classList.add('hidden');
         loadCurrentUser();
+    } else {
+        document.getElementById('loginBtn').classList.remove('hidden');
+        document.getElementById('registerBtn').classList.remove('hidden');
+        document.getElementById('profileBtn').classList.add('hidden');
+        document.getElementById('logoutBtn').classList.add('hidden');
+        document.getElementById('welcomeSection').classList.remove('hidden');
+        document.getElementById('newsSection').classList.add('hidden');
+        document.getElementById('analysisSection').classList.add('hidden');
     }
 }
 
@@ -238,9 +297,167 @@ async function loadCurrentUser() {
         
         if (response.ok) {
             currentUser = await response.json();
+            console.log('Current user preferences:', currentUser.preferences);
+            
+            // Check if user has preferences set
+            if (currentUser.preferences && currentUser.preferences.categories && currentUser.preferences.categories.length > 0) {
+                // User has preferences, load news directly
+                selectedCategories = currentUser.preferences.categories;
+                selectedRegion = currentUser.preferences.region || 'global';
+                console.log('Loaded preferences - Categories:', selectedCategories, 'Region:', selectedRegion);
+                document.getElementById('newsSection').classList.remove('hidden');
+                document.getElementById('analysisSection').classList.remove('hidden');
+                loadNews();
+            } else {
+                // User needs to set preferences
+                console.log('No preferences found, showing preference modal');
+                showPreferenceModal();
+            }
         }
     } catch (error) {
         console.error('Error loading user:', error);
+    }
+}
+
+// Show Preference Modal
+function showPreferenceModal() {
+    loadPreferenceCategories();
+    loadPreferenceRegions();
+    document.getElementById('preferenceModal').classList.remove('hidden');
+}
+
+// Close Preference Modal
+function closePreferenceModal() {
+    document.getElementById('preferenceModal').classList.add('hidden');
+    preferenceCategories = [];
+    preferenceRegion = 'global';
+}
+
+// Save Preferences
+async function savePreferences() {
+    if (preferenceCategories.length === 0) {
+        alert('Please select at least one category');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/preferences`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                categories: preferenceCategories,
+                region: preferenceRegion
+            })
+        });
+        
+        if (response.ok) {
+            selectedCategories = preferenceCategories;
+            selectedRegion = preferenceRegion;
+            closePreferenceModal();
+            document.getElementById('newsSection').classList.remove('hidden');
+            document.getElementById('analysisSection').classList.remove('hidden');
+            loadNews();
+            alert('Preferences saved successfully!');
+        } else {
+            alert('Failed to save preferences');
+        }
+    } catch (error) {
+        console.error('Error saving preferences:', error);
+        alert('Failed to save preferences');
+    }
+}
+
+// Show Profile Modal
+function showProfileModal() {
+    loadPreferenceCategories();
+    loadPreferenceRegions();
+    
+    // Load current user preferences
+    if (currentUser && currentUser.preferences) {
+        profileCategories = currentUser.preferences.categories || [];
+        profileRegion = currentUser.preferences.region || 'global';
+        
+        // Select current categories in profile modal
+        setTimeout(() => {
+            document.querySelectorAll('#profileCategoryGrid .category-item').forEach(item => {
+                const category = item.dataset.category;
+                if (profileCategories.includes(category)) {
+                    item.classList.add('selected');
+                }
+            });
+            
+            // Select current region in profile modal
+            document.querySelectorAll('#profileRegionGrid .region-item').forEach(item => {
+                const region = item.dataset.region;
+                if (region === profileRegion) {
+                    item.classList.add('selected');
+                }
+            });
+        }, 100);
+    }
+    
+    // Display user info
+    const profileInfo = document.getElementById('profileInfo');
+    profileInfo.innerHTML = `
+        <p><strong>Name:</strong> ${currentUser ? currentUser.name : 'N/A'}</p>
+        <p><strong>Email:</strong> ${currentUser ? currentUser.email : 'N/A'}</p>
+        <p><strong>Current Categories:</strong> ${profileCategories.join(', ')}</p>
+        <p><strong>Current Region:</strong> ${profileRegion.toUpperCase()}</p>
+    `;
+    
+    document.getElementById('profileModal').classList.remove('hidden');
+}
+
+// Close Profile Modal
+function closeProfileModal() {
+    document.getElementById('profileModal').classList.add('hidden');
+    profileCategories = [];
+    profileRegion = 'global';
+}
+
+// Update Preferences from Profile
+async function updatePreferences() {
+    if (profileCategories.length === 0) {
+        alert('Please select at least one category');
+        return;
+    }
+    
+    console.log('Updating preferences - Categories:', profileCategories, 'Region:', profileRegion);
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/preferences`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                categories: profileCategories,
+                region: profileRegion
+            })
+        });
+        
+        console.log('Update response status:', response.status);
+        
+        if (response.ok) {
+            selectedCategories = profileCategories;
+            selectedRegion = profileRegion;
+            currentUser.preferences.categories = profileCategories;
+            currentUser.preferences.region = profileRegion;
+            console.log('Preferences updated successfully - Selected Region:', selectedRegion);
+            closeProfileModal();
+            loadNews();
+            alert('Preferences updated successfully!');
+        } else {
+            console.error('Failed to update preferences - Response:', await response.text());
+            alert('Failed to update preferences');
+        }
+    } catch (error) {
+        console.error('Error updating preferences:', error);
+        alert('Failed to update preferences');
     }
 }
 
@@ -250,6 +467,7 @@ function setupEventListeners() {
     document.getElementById('loginBtn').addEventListener('click', () => openAuthModal('login'));
     document.getElementById('registerBtn').addEventListener('click', () => openAuthModal('register'));
     document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('profileBtn').addEventListener('click', showProfileModal);
     
     // Modal close
     document.querySelector('.close').addEventListener('click', closeAuthModal);
@@ -257,18 +475,49 @@ function setupEventListeners() {
         if (e.target.id === 'authModal') closeAuthModal();
     });
     
+    // Preference modal close
+    document.querySelectorAll('#preferenceModal .close, #profileModal .close').forEach(closeBtn => {
+        closeBtn.addEventListener('click', (e) => {
+            if (e.target.closest('#preferenceModal')) closePreferenceModal();
+            if (e.target.closest('#profileModal')) closeProfileModal();
+        });
+    });
+    
+    document.getElementById('preferenceModal').addEventListener('click', (e) => {
+        if (e.target.id === 'preferenceModal') closePreferenceModal();
+    });
+    
+    document.getElementById('profileModal').addEventListener('click', (e) => {
+        if (e.target.id === 'profileModal') closeProfileModal();
+    });
+    
     // Auth form
     document.getElementById('authForm').addEventListener('submit', handleAuth);
+    
+    // Save preferences button
+    document.getElementById('savePreferencesBtn').addEventListener('click', savePreferences);
+    
+    // Update preferences button
+    document.getElementById('updatePreferencesBtn').addEventListener('click', updatePreferences);
     
     // Refresh button
     document.getElementById('refreshBtn').addEventListener('click', loadNews);
     
-    // Personalized news
-    document.getElementById('loadPersonalizedBtn').addEventListener('click', loadPersonalizedNews);
-    
     // Analysis buttons
     document.getElementById('trendsBtn').addEventListener('click', loadTrends);
     document.getElementById('keywordsBtn').addEventListener('click', loadKeywords);
+}
+
+// Load Trends (placeholder - to be implemented)
+async function loadTrends() {
+    const analysisResults = document.getElementById('analysisResults');
+    analysisResults.innerHTML = '<p>Trends feature coming soon...</p>';
+}
+
+// Load Keywords (placeholder - to be implemented)
+async function loadKeywords() {
+    const analysisResults = document.getElementById('analysisResults');
+    analysisResults.innerHTML = '<p>Keywords feature coming soon...</p>';
 }
 
 // Auth Modal

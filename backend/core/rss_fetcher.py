@@ -119,11 +119,60 @@ RSS_SOURCES = [
         source_id="toi-sports-rss",
     ),
     RSSSource(
+        name="NDTV Sports",
+        url="https://feeds.ndtv.com/ndtv/sports",
+        category="sports",
+        region="india",
+        source_id="ndtv-sports-rss",
+    ),
+    RSSSource(
+        name="Cricbuzz Cricket",
+        url="https://www.cricbuzz.com/feed/rss",
+        category="sports",
+        region="india",
+        source_id="cricbuzz-rss",
+    ),
+    RSSSource(
+        name="Sportskeeda",
+        url="https://www.sportskeeda.com/feed",
+        category="sports",
+        region="india",
+        source_id="sportskeeda-rss",
+    ),
+    RSSSource(
         name="ESPN Cricket",
         url="https://www.espncricinfo.com/feeds/cricket_rss_feeds/v2_2_2_feed.xml",
         category="sports",
         region="global",
         source_id="espn-cricket-rss",
+    ),
+    RSSSource(
+        name="ESPN Sports",
+        url="https://www.espn.com/espn/rss/news",
+        category="sports",
+        region="us",
+        source_id="espn-sports-rss",
+    ),
+    RSSSource(
+        name="BBC Sport",
+        url="http://feeds.bbci.co.uk/sport/rss.xml",
+        category="sports",
+        region="gb",
+        source_id="bbc-sport-rss",
+    ),
+    RSSSource(
+        name="Sky Sports",
+        url="https://www.skysports.com/rss/12040",
+        category="sports",
+        region="gb",
+        source_id="sky-sports-rss",
+    ),
+    RSSSource(
+        name="Fox Sports",
+        url="https://www.foxsports.com/rss/feed",
+        category="sports",
+        region="us",
+        source_id="fox-sports-rss",
     ),
     # Health & Science
     RSSSource(
@@ -140,6 +189,62 @@ RSS_SOURCES = [
         category="entertainment",
         region="india",
         source_id="ndtv-ent-rss",
+    ),
+    RSSSource(
+        name="Times of India - Entertainment",
+        url="https://timesofindia.indiatimes.com/rssfeeds/1081479906.cms",
+        category="entertainment",
+        region="india",
+        source_id="toi-ent-rss",
+    ),
+    RSSSource(
+        name="Bollywood Hungama",
+        url="https://www.bollywoodhungama.com/feed/news/",
+        category="entertainment",
+        region="india",
+        source_id="bollywood-rss",
+    ),
+    RSSSource(
+        name="BBC Entertainment",
+        url="https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml",
+        category="entertainment",
+        region="gb",
+        source_id="bbc-ent-rss",
+    ),
+    RSSSource(
+        name="Sky Entertainment",
+        url="https://news.sky.com/feeds/rss/entertainment.xml",
+        category="entertainment",
+        region="gb",
+        source_id="sky-ent-rss",
+    ),
+    RSSSource(
+        name="Variety",
+        url="https://variety.com/feed/",
+        category="entertainment",
+        region="us",
+        source_id="variety-rss",
+    ),
+    RSSSource(
+        name="Hollywood Reporter",
+        url="https://www.hollywoodreporter.com/feed/",
+        category="entertainment",
+        region="us",
+        source_id="hr-rss",
+    ),
+    RSSSource(
+        name="Entertainment Weekly",
+        url="https://ew.com/feed/",
+        category="entertainment",
+        region="us",
+        source_id="ew-rss",
+    ),
+    RSSSource(
+        name="Deadline",
+        url="https://deadline.com/feed/",
+        category="entertainment",
+        region="us",
+        source_id="deadline-rss",
     ),
     # Global News
     RSSSource(
@@ -169,6 +274,34 @@ RSS_SOURCES = [
         category="general",
         region="global",
         source_id="guardian-rss",
+    ),
+    RSSSource(
+        name="BBC UK",
+        url="http://feeds.bbci.co.uk/news/uk/rss.xml",
+        category="general",
+        region="gb",
+        source_id="bbc-uk-rss",
+    ),
+    RSSSource(
+        name="Sky News",
+        url="https://news.sky.com/feeds/rss/world.xml",
+        category="general",
+        region="gb",
+        source_id="sky-news-rss",
+    ),
+    RSSSource(
+        name="Al Jazeera",
+        url="https://www.aljazeera.com/xml/rss/all.xml",
+        category="general",
+        region="global",
+        source_id="aljazeera-rss",
+    ),
+    RSSSource(
+        name="DW News",
+        url="https://rss.dw.com/xml/rss-en-all",
+        category="general",
+        region="global",
+        source_id="dw-rss",
     ),
 ]
 
@@ -359,12 +492,41 @@ class RSSFetcher:
                 except:
                     pass
 
-            # Extract image
+            # Extract image - try multiple methods
             image_url = ""
+            
+            # Method 1: media_content
             if entry.get("media_content"):
                 image_url = entry["media_content"][0].get("url", "")
+            
+            # Method 2: image href
             elif entry.get("image"):
                 image_url = entry["image"].get("href", "")
+            
+            # Method 3: enclosures (common in RSS)
+            elif entry.get("enclosures"):
+                for enclosure in entry["enclosures"]:
+                    if enclosure.get("type", "").startswith("image/"):
+                        image_url = enclosure.get("href", "")
+                        break
+            
+            # Method 4: extract from description/summary HTML
+            if not image_url and description:
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(description, "html.parser")
+                img_tag = soup.find("img")
+                if img_tag and img_tag.get("src"):
+                    image_url = img_tag.get("src")
+            
+            # Method 5: try content field
+            if not image_url and entry.get("content"):
+                content = entry["content"][0] if isinstance(entry["content"], list) else entry["content"]
+                if isinstance(content, dict) and content.get("value"):
+                    from bs4 import BeautifulSoup
+                    soup = BeautifulSoup(content["value"], "html.parser")
+                    img_tag = soup.find("img")
+                    if img_tag and img_tag.get("src"):
+                        image_url = img_tag.get("src")
 
             # Extract author
             author = entry.get("author", "")

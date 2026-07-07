@@ -14,28 +14,62 @@
             <div class="auth-buttons">
                 <button id="loginBtn" class="btn btn-secondary">Login</button>
                 <button id="registerBtn" class="btn btn-primary">Register</button>
+                <button id="profileBtn" class="btn btn-secondary hidden">Profile</button>
                 <button id="logoutBtn" class="btn btn-secondary hidden">Logout</button>
             </div>
         </header>
 
-        <!-- Category Selection -->
-        <section class="category-section">
-            <h2>Select News Categories</h2>
-            <div id="categoryGrid" class="category-grid">
-                <!-- Categories will be loaded here -->
-            </div>
+        <!-- Welcome Section (shown when not logged in) -->
+        <section id="welcomeSection" class="welcome-section">
+            <h2>Welcome to AI News App</h2>
+            <p>Get personalized news powered by AI</p>
+            <p>Please login or register to get started</p>
         </section>
 
-        <!-- Region Selection -->
-        <section class="region-section">
-            <h2>Select Region</h2>
-            <div id="regionGrid" class="region-grid">
-                <!-- Regions will be loaded here -->
+        <!-- Preference Selection Modal (shown on first login) -->
+        <div id="preferenceModal" class="modal hidden">
+            <div class="modal-content preference-content">
+                <span class="close">&times;</span>
+                <h2>🎯 Select Your Preferences</h2>
+                <p>Choose your preferred news categories and region</p>
+                
+                <div class="form-group">
+                    <label>Select Categories (at least one):</label>
+                    <div id="preferenceCategoryGrid" class="category-grid"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Select Region:</label>
+                    <div id="preferenceRegionGrid" class="region-grid"></div>
+                </div>
+                
+                <button id="savePreferencesBtn" class="btn btn-primary">Save Preferences</button>
             </div>
-        </section>
+        </div>
 
-        <!-- News Display -->
-        <section class="news-section">
+        <!-- Profile Modal (shown when user clicks Profile) -->
+        <div id="profileModal" class="modal hidden">
+            <div class="modal-content preference-content">
+                <span class="close">&times;</span>
+                <h2>👤 Your Profile</h2>
+                <div id="profileInfo" class="profile-info"></div>
+                
+                <div class="form-group">
+                    <label>Update Categories:</label>
+                    <div id="profileCategoryGrid" class="category-grid"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Update Region:</label>
+                    <div id="profileRegionGrid" class="region-grid"></div>
+                </div>
+                
+                <button id="updatePreferencesBtn" class="btn btn-primary">Update Preferences</button>
+            </div>
+        </div>
+
+        <!-- News Display (shown after preferences are set) -->
+        <section id="newsSection" class="news-section hidden">
             <div class="news-header">
                 <h2 id="newsTitle">Latest News</h2>
                 <button id="refreshBtn" class="btn btn-secondary">Refresh</button>
@@ -50,16 +84,8 @@
             <div id="errorMessage" class="error-message hidden"></div>
         </section>
 
-        <!-- Personalized Section (shown when logged in) -->
-        <section id="personalizedSection" class="personalized-section hidden">
-            <h2>🎯 Personalized News</h2>
-            <p>News tailored to your preferences</p>
-            <button id="loadPersonalizedBtn" class="btn btn-primary">Load Personalized News</button>
-            <div id="personalizedNewsGrid" class="news-grid"></div>
-        </section>
-
         <!-- Analysis Section -->
-        <section class="analysis-section">
+        <section id="analysisSection" class="analysis-section hidden">
             <h2>📊 News Analysis</h2>
             <div class="analysis-controls">
                 <button id="trendsBtn" class="btn btn-secondary">View Trends</button>

@@ -88,6 +88,62 @@ section h2 {
     margin-bottom: 20px;
 }
 
+/* Welcome Section */
+.welcome-section {
+    text-align: center;
+    padding: 60px 30px;
+}
+
+.welcome-section h2 {
+    font-size: 32px;
+    margin-bottom: 15px;
+}
+
+.welcome-section p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+/* Preference Modal Content */
+.preference-content {
+    max-width: 600px;
+}
+
+.preference-content .form-group {
+    margin-bottom: 25px;
+}
+
+.preference-content .form-group label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #333;
+    font-size: 16px;
+}
+
+.preference-content .category-grid,
+.preference-content .region-grid {
+    margin-bottom: 15px;
+}
+
+/* Profile Info */
+.profile-info {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.profile-info p {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.profile-info strong {
+    color: #667eea;
+}
+
 /* Category Grid */
 .category-grid {
     display: grid;
