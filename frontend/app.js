@@ -103,7 +103,7 @@ async function loadPreferenceRegions() {
             prefItem.className = 'region-item';
             prefItem.dataset.region = region;
             prefItem.innerHTML = `
-                <div class="name">${region.charAt(0).toUpperCase() + region.slice(1)}</div>
+                <div class="name">${getRegionName(region)}</div>
             `;
             prefItem.addEventListener('click', () => selectPreferenceRegion(region, prefItem));
             regionGrid.appendChild(prefItem);
@@ -113,7 +113,7 @@ async function loadPreferenceRegions() {
             profileItem.className = 'region-item';
             profileItem.dataset.region = region;
             profileItem.innerHTML = `
-                <div class="name">${region.charAt(0).toUpperCase() + region.slice(1)}</div>
+                <div class="name">${getRegionName(region)}</div>
             `;
             profileItem.addEventListener('click', () => selectProfileRegion(region, profileItem));
             profileRegionGrid.appendChild(profileItem);
@@ -201,12 +201,12 @@ async function loadNews() {
         
         displayNews(data.articles || []);
         
-        // Update header to show all selected categories
+        // Update header to show all selected categories and proper region name
         const categoryNames = selectedCategories.map(cat => 
             cat.charAt(0).toUpperCase() + cat.slice(1)
         ).join(', ');
         document.getElementById('newsTitle').textContent = 
-            `${categoryNames} News - ${selectedRegion.toUpperCase()}`;
+            `${categoryNames} News - ${getRegionName(selectedRegion)}`;
     } catch (error) {
         console.error('Error loading news:', error);
         showError('Failed to load news. Please try again.');
@@ -265,6 +265,24 @@ function formatDate(dateString) {
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
     return date.toLocaleDateString();
+}
+
+// Get proper region name for display
+function getRegionName(regionCode) {
+    const regionNames = {
+        'us': 'United States',
+        'gb': 'United Kingdom',
+        'ca': 'Canada',
+        'au': 'Australia',
+        'in': 'India',
+        'de': 'Germany',
+        'fr': 'France',
+        'it': 'Italy',
+        'es': 'Spain',
+        'nl': 'Netherlands',
+        'global': 'Global'
+    };
+    return regionNames[regionCode] || regionCode.toUpperCase();
 }
 
 // Authentication
@@ -414,7 +432,7 @@ function showProfileModal() {
         <p><strong>Name:</strong> ${currentUser ? currentUser.name : 'N/A'}</p>
         <p><strong>Email:</strong> ${currentUser ? currentUser.email : 'N/A'}</p>
         <p><strong>Current Categories:</strong> ${profileCategories.join(', ')}</p>
-        <p><strong>Current Region:</strong> ${profileRegion.toUpperCase()}</p>
+        <p><strong>Current Region:</strong> ${getRegionName(profileRegion)}</p>
     `;
     
     document.getElementById('profileModal').classList.remove('hidden');
