@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # Server Configuration
     server_host: str = Field(default="0.0.0.0", env="SERVER_HOST")
-    server_port: int = Field(default=8000, env="SERVER_PORT")
+    server_port: int = Field(default=8000, env="PORT")  # Changed to PORT for Railway compatibility
     cors_origins: List[str] = Field(
         default=["http://localhost:3000", "http://localhost:8000"], env="CORS_ORIGINS"
     )
@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     # Database Configuration
     database_url: str = Field(default="sqlite:///./news_app.db", env="DATABASE_URL")
     sqlalchemy_echo: bool = Field(default=False, env="SQLALCHEMY_ECHO")
+    sqlalchemy_pool_size: int = Field(default=5, env="SQLALCHEMY_POOL_SIZE")
+    sqlalchemy_max_overflow: int = Field(default=10, env="SQLALCHEMY_MAX_OVERFLOW")
 
     # Redis Configuration
     redis_url: str = Field(default="redis://localhost:6379/0", env="REDIS_URL")
@@ -47,6 +49,17 @@ class Settings(BaseSettings):
     # Cache Settings
     cache_ttl: int = Field(default=3600, env="CACHE_TTL")  # seconds
     news_fetch_interval: int = Field(default=1800, env="NEWS_FETCH_INTERVAL")  # seconds
+
+    # Security Configuration
+    secret_key: str = Field(default="your-secret-key-change-in-production", env="SECRET_KEY")
+
+    # Email Configuration
+    smtp_host: str = Field(default="smtp.gmail.com", env="SMTP_HOST")
+    smtp_port: int = Field(default=587, env="SMTP_PORT")
+    smtp_username: str = Field(default="", env="SMTP_USERNAME")
+    smtp_password: str = Field(default="", env="SMTP_PASSWORD")
+    smtp_from_email: str = Field(default="noreply@ainewsapp.com", env="SMTP_FROM_EMAIL")
+    smtp_use_tls: bool = Field(default=True, env="SMTP_USE_TLS")
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -8,7 +8,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.config.settings import get_settings
-from backend.api.v1 import health, news, categories
+from backend.api.v1 import health, news, categories, auth, notifications, analysis, mobile
+from backend.api import users
+from backend.core.database import init_db
 
 # Configure logging
 logging.basicConfig(
@@ -28,6 +30,11 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     logger.info(f"Debug mode: {settings.debug}")
+    
+    # Initialize database
+    init_db()
+    logger.info("Database initialized")
+    
     yield
     # Shutdown
     logger.info("Shutting down application")
@@ -39,13 +46,15 @@ app = FastAPI(
     version=settings.app_version,
     description="AI-powered news aggregation and analysis platform",
     lifespan=lifespan,
-    debug=settings.debug
+    debug=settings.debug,
+    docs_url="/docs" if settings.debug else None,  # Hide docs in production
+    redoc_url="/redoc" if settings.debug else None
 )
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=settings.cors_origins + ["null", "file://"],  # Allow file:// protocol for local dev
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -55,6 +64,11 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
 app.include_router(categories.router, prefix="/api/v1", tags=["categories"])
 app.include_router(news.router, prefix="/api/v1", tags=["news"])
+app.include_router(auth.router, prefix="/api/v1", tags=["auth"])
+app.include_router(users.router, prefix="/api/v1", tags=["users"])
+app.include_router(notifications.router, prefix="/api/v1", tags=["notifications"])
+app.include_router(analysis.router, prefix="/api/v1", tags=["analysis"])
+app.include_router(mobile.router, prefix="/api/v1", tags=["mobile"])
 
 
 @app.get("/")

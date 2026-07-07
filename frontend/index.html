@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI News App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🤖 AI News App</h1>
+            <div class="auth-buttons">
+                <button id="loginBtn" class="btn btn-secondary">Login</button>
+                <button id="registerBtn" class="btn btn-primary">Register</button>
+                <button id="logoutBtn" class="btn btn-secondary hidden">Logout</button>
+            </div>
+        </header>
+
+        <!-- Category Selection -->
+        <section class="category-section">
+            <h2>Select News Categories</h2>
+            <div id="categoryGrid" class="category-grid">
+                <!-- Categories will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Region Selection -->
+        <section class="region-section">
+            <h2>Select Region</h2>
+            <div id="regionGrid" class="region-grid">
+                <!-- Regions will be loaded here -->
+            </div>
+        </section>
+
+        <!-- News Display -->
+        <section class="news-section">
+            <div class="news-header">
+                <h2 id="newsTitle">Latest News</h2>
+                <button id="refreshBtn" class="btn btn-secondary">Refresh</button>
+            </div>
+            <div id="newsGrid" class="news-grid">
+                <!-- News articles will be loaded here -->
+            </div>
+            <div id="loadingSpinner" class="loading-spinner hidden">
+                <div class="spinner"></div>
+                <p>Loading news...</p>
+            </div>
+            <div id="errorMessage" class="error-message hidden"></div>
+        </section>
+
+        <!-- Personalized Section (shown when logged in) -->
+        <section id="personalizedSection" class="personalized-section hidden">
+            <h2>🎯 Personalized News</h2>
+            <p>News tailored to your preferences</p>
+            <button id="loadPersonalizedBtn" class="btn btn-primary">Load Personalized News</button>
+            <div id="personalizedNewsGrid" class="news-grid"></div>
+        </section>
+
+        <!-- Analysis Section -->
+        <section class="analysis-section">
+            <h2>📊 News Analysis</h2>
+            <div class="analysis-controls">
+                <button id="trendsBtn" class="btn btn-secondary">View Trends</button>
+                <button id="keywordsBtn" class="btn btn-secondary">Trending Keywords</button>
+            </div>
+            <div id="analysisResults" class="analysis-results"></div>
+        </section>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="authModalTitle">Login</h2>
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="form-group hidden" id="nameGroup">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name">
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
