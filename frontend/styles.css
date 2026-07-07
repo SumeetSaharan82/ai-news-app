@@ -413,6 +413,53 @@ section h2 {
     position: relative;
 }
 
+.article-content {
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.article-content h2 {
+    margin-top: 0;
+    color: #333;
+}
+
+.article-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.article-content p {
+    line-height: 1.6;
+    color: #555;
+}
+
+.article-content .article-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.article-content .article-meta span {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.article-actions {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.article-actions button {
+    margin-left: 10px;
+}
+
 .close {
     position: absolute;
     right: 20px;

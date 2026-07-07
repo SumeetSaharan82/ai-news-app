@@ -286,7 +286,7 @@ function displayNewsByCategory(results) {
                         </div>
                     </div>
                 `;
-                newsCard.addEventListener('click', () => window.open(article.url, '_blank'));
+                newsCard.addEventListener('click', () => showArticleModal(article));
                 categoryGrid.appendChild(newsCard);
             });
             
@@ -329,11 +329,38 @@ function displayNews(articles) {
                 </div>
             </div>
         `;
-        newsCard.addEventListener('click', () => window.open(article.url, '_blank'));
+        newsCard.addEventListener('click', () => showArticleModal(article));
         newsGrid.appendChild(newsCard);
     });
     
     console.log('News cards rendered successfully');
+}
+
+// Show Article Modal
+function showArticleModal(article) {
+    const modal = document.getElementById('articleModal');
+    const content = document.getElementById('articleContent');
+    const openInNewTabBtn = document.getElementById('openInNewTabBtn');
+    
+    content.innerHTML = `
+        ${article.image_url ? `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">` : ''}
+        <h2>${article.title}</h2>
+        <div class="article-meta">
+            <span><strong>Source:</strong> ${article.source}</span>
+            <span><strong>Published:</strong> ${formatDate(article.published_at)}</span>
+        </div>
+        <p>${article.description || 'No description available'}</p>
+        ${article.content ? `<p>${article.content}</p>` : ''}
+    `;
+    
+    openInNewTabBtn.onclick = () => window.open(article.url, '_blank');
+    
+    modal.classList.remove('hidden');
+}
+
+// Close Article Modal
+function closeArticleModal() {
+    document.getElementById('articleModal').classList.add('hidden');
 }
 
 // Format Date
@@ -616,6 +643,16 @@ function setupEventListeners() {
         if (e.target.id === 'profileModal') closeProfileModal();
     });
     
+    // Article modal close
+    document.getElementById('articleModal').addEventListener('click', (e) => {
+        if (e.target.id === 'articleModal') closeArticleModal();
+    });
+    
+    // Article modal close button
+    document.querySelectorAll('#articleModal .close').forEach(closeBtn => {
+        closeBtn.addEventListener('click', closeArticleModal);
+    });
+    
     // Auth form
     document.getElementById('authForm').addEventListener('submit', handleAuth);
     
@@ -766,7 +803,7 @@ function displayNewsInGrid(articles, gridElement) {
                 </div>
             </div>
         `;
-        newsCard.addEventListener('click', () => window.open(article.url, '_blank'));
+        newsCard.addEventListener('click', () => showArticleModal(article));
         gridElement.appendChild(newsCard);
     });
 }
