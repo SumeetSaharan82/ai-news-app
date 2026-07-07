@@ -90,13 +90,6 @@ RSS_SOURCES = [
     ),
     # Technology
     RSSSource(
-        name="NDTV Tech",
-        url="https://feeds.ndtv.com/ndtv/tech",
-        category="technology",
-        region="india",
-        source_id="ndtv-tech-rss",
-    ),
-    RSSSource(
         name="The Verge",
         url="https://www.theverge.com/rss/index.xml",
         category="technology",
@@ -119,15 +112,8 @@ RSS_SOURCES = [
         source_id="toi-sports-rss",
     ),
     RSSSource(
-        name="NDTV Sports",
-        url="https://feeds.ndtv.com/ndtv/sports",
-        category="sports",
-        region="india",
-        source_id="ndtv-sports-rss",
-    ),
-    RSSSource(
         name="Cricbuzz Cricket",
-        url="https://www.cricbuzz.com/feed/rss",
+        url="https://www.cricbuzz.com/rss/cricket-news",
         category="sports",
         region="india",
         source_id="cricbuzz-rss",
@@ -141,7 +127,7 @@ RSS_SOURCES = [
     ),
     RSSSource(
         name="ESPN Cricket",
-        url="https://www.espncricinfo.com/feeds/cricket_rss_feeds/v2_2_2_feed.xml",
+        url="https://www.espncricinfo.com/rss/content/story/feeds/0.xml",
         category="sports",
         region="global",
         source_id="espn-cricket-rss",
@@ -249,14 +235,14 @@ RSS_SOURCES = [
     # Global News
     RSSSource(
         name="BBC News",
-        url="http://feeds.bbc.co.uk/news/rss.xml",
+        url="https://feeds.bbci.co.uk/news/rss.xml",
         category="general",
         region="global",
         source_id="bbc-rss",
     ),
     RSSSource(
         name="Reuters Top News",
-        url="https://www.reuters.com/newmedia/rss/newsrss.rss",
+        url="https://feeds.reuters.com/reuters/topNews",
         category="general",
         region="global",
         source_id="reuters-rss",
@@ -374,32 +360,51 @@ class RSSFetcher:
         limit: int = 5,
     ) -> List[NewsArticle]:
         """
-        Fetch from multiple RSS sources
+        Fetch from multiple RSS sources with automatic global fallback.
 
-        Args:
-            category: Filter by category
-            region: Filter by region
-            limit: Articles per source
-
-        Returns:
-            Combined list of articles from all matching sources
+        Priority:
+        1. Sources matching both category AND region
+        2. Sources matching category AND region='global'
+        3. Sources matching category only (any region)
+        4. All sources (if no category filter)
         """
-        # Filter sources by category and region
-        filtered_sources = [
-            source
-            for source in RSS_SOURCES
-            if (category is None or source.category == category)
-            and (region is None or source.region == region)
-        ]
+        def _select_sources(cat, reg):
+            # Exact match
+            exact = [s for s in RSS_SOURCES
+                     if (cat is None or s.category == cat)
+                     and (reg is None or s.region == reg)]
+            if exact:
+                return exact
+            # Fall back to global sources for this category
+            if reg and reg != "global":
+                global_srcs = [s for s in RSS_SOURCES
+                                if (cat is None or s.category == cat)
+                                and s.region == "global"]
+                if global_srcs:
+                    logger.info(f"No '{reg}' sources for category '{cat}', falling back to global")
+                    return global_srcs
+            # Fall back to any region for this category
+            if cat:
+                any_region = [s for s in RSS_SOURCES if s.category == cat]
+                if any_region:
+                    return any_region
+            return RSS_SOURCES
+
+        filtered_sources = _select_sources(category, region)
+
+        # Deduplicate sources so the same feed isn't fetched twice
+        seen_ids = set()
+        unique_sources = []
+        for s in filtered_sources:
+            if s.source_id not in seen_ids:
+                seen_ids.add(s.source_id)
+                unique_sources.append(s)
 
         # Fetch from all sources concurrently
-        tasks = [
-            self.fetch_feed(source.source_id, limit) for source in filtered_sources
-        ]
-
+        tasks = [self.fetch_feed(source.source_id, limit) for source in unique_sources]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        # Combine results and remove duplicates
+        # Combine results and remove duplicates by URL
         all_articles = []
         for result in results:
             if isinstance(result, list):
@@ -407,20 +412,12 @@ class RSSFetcher:
             elif isinstance(result, Exception):
                 logger.error(f"Error in fetch task: {result}")
 
-        # Remove duplicates based on URL
         unique_articles = {}
         for article in all_articles:
             if article.url not in unique_articles:
                 unique_articles[article.url] = article
 
-        # Sort by published date (most recent first)
-        sorted_articles = sorted(
-            unique_articles.values(),
-            key=lambda x: x.published_at,
-            reverse=True,
-        )
-
-        return sorted_articles
+        return sorted(unique_articles.values(), key=lambda x: x.published_at, reverse=True)
 
     async def extract_content_from_link(
         self, url: str, source_id: str = "unknown"

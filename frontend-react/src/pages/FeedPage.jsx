@@ -83,11 +83,10 @@ export default function FeedPage() {
   }, [filter.category, filter.search, categories.join(',')])
 
   useEffect(() => {
-    if (!fetchedRef.current || refreshing) {
-      fetchedRef.current = true
-      fetchFeed()
-      setRefreshing(false)
-    }
+    // Always re-fetch when fetchFeed changes (categories/region changed) or on manual refresh
+    fetchedRef.current = true
+    fetchFeed()
+    if (refreshing) setRefreshing(false)
   }, [fetchFeed, refreshing])
 
   // Fetch server-side usage status on mount
@@ -258,7 +257,7 @@ export default function FeedPage() {
         <div ref={containerRef} className="feed-container pt-[110px]" style={{ paddingBottom: '72px' }}>
           {articles.map((article, idx) => (
             <NewsCard
-              key={article.id || article.url || idx}
+              key={`${article.url || article.id || ''}-${idx}`}
               article={article}
               index={idx}
               isActive={idx === currentIdx}

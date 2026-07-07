@@ -113,27 +113,31 @@ async def get_personalized_news(
         current_user.preferences or UserPreferences().to_dict()
     )
     
-    # Fetch news for each preferred category and region
-    all_articles = []
+    # Fetch all categories in parallel, each with fallback-aware fetch_all_sources
     fetcher = RSSFetcher()
-    
-    # Limit per category to avoid too many articles
-    per_category_limit = max(1, limit // max(len(user_prefs.categories), 1))
-    
-    for category in user_prefs.categories:
-        for region in user_prefs.regions:
-            try:
-                # Map frontend region codes (e.g. 'in') to RSS source names (e.g. 'india')
-                mapped_region = REGION_CODE_MAP.get(region, region)
-                articles = await fetcher.fetch_all_sources(
-                    category=category,
-                    region=mapped_region,
-                    limit=per_category_limit
-                )
-                all_articles.extend(articles)
-            except Exception as e:
-                # Continue with other categories if one fails
-                continue
+    per_category_limit = max(3, limit // max(len(user_prefs.categories), 1))
+
+    # Map all user regions once
+    mapped_regions = [REGION_CODE_MAP.get(r, r) for r in (user_prefs.regions or ["global"])]
+    # Use first preferred region (primary); fetch_all_sources handles fallback to global
+    primary_region = mapped_regions[0] if mapped_regions else None
+
+    fetch_tasks = [
+        fetcher.fetch_all_sources(
+            category=category,
+            region=primary_region,
+            limit=per_category_limit,
+        )
+        for category in user_prefs.categories
+    ]
+
+    import asyncio as _asyncio
+    results = await _asyncio.gather(*fetch_tasks, return_exceptions=True)
+
+    all_articles = []
+    for result in results:
+        if isinstance(result, list):
+            all_articles.extend(result)
     
     # Remove duplicates based on URL
     unique_articles = {}
