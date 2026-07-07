@@ -226,6 +226,20 @@ RSS_SOURCES = [
         source_id="bollywood-rss",
     ),
     RSSSource(
+        name="Times of India - Politics",
+        url="https://timesofindia.indiatimes.com/rssfeeds/5450618.cms",
+        category="politics",
+        region="india",
+        source_id="toi-politics-rss",
+    ),
+    RSSSource(
+        name="The Hindu - Politics",
+        url="https://www.thehindu.com/news/national/?service=rss",
+        category="politics",
+        region="india",
+        source_id="hindu-politics-rss",
+    ),
+    RSSSource(
         name="BBC Entertainment",
         url="https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml",
         category="entertainment",
