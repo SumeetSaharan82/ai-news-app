@@ -9,15 +9,15 @@ from backend.core.user_models import Base
 
 settings = get_settings()
 
-# Create database engine
-engine = create_engine(
-    settings.database_url,
-    echo=settings.sqlalchemy_echo,
-    pool_pre_ping=True,  # Verify connections before using
-    pool_size=settings.sqlalchemy_pool_size,  # Connection pool size from settings
-    max_overflow=settings.sqlalchemy_max_overflow,  # Max overflow connections from settings
-    connect_args={"check_same_thread": False} if "sqlite" in settings.database_url else {}
-)
+# Create database engine (SQLite needs different pool config)
+is_sqlite = "sqlite" in settings.database_url
+engine_kwargs = dict(echo=settings.sqlalchemy_echo, pool_pre_ping=True)
+if not is_sqlite:
+    engine_kwargs.update(pool_size=settings.sqlalchemy_pool_size, max_overflow=settings.sqlalchemy_max_overflow)
+if is_sqlite:
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+
+engine = create_engine(settings.database_url, **engine_kwargs)
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

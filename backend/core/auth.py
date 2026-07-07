@@ -4,7 +4,8 @@ Authentication utilities for JWT token handling and password hashing
 
 from datetime import datetime, timedelta
 from typing import Optional
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import InvalidTokenError as JWTError
 from passlib.context import CryptContext
 from backend.config.settings import get_settings
 
@@ -14,7 +15,19 @@ settings = get_settings()
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 # JWT configuration
-SECRET_KEY = settings.secret_key if hasattr(settings, 'secret_key') else "your-secret-key-change-in-production"
+import os, logging as _logging
+_DEFAULT_SECRET = "briefed-dev-secret-change-in-production"
+SECRET_KEY = settings.secret_key or os.environ.get("SECRET_KEY", _DEFAULT_SECRET)
+_insecure = SECRET_KEY in (_DEFAULT_SECRET, "your-secret-key-change-in-production")
+if _insecure:
+    if not settings.debug:
+        raise RuntimeError(
+            "SECRET_KEY is set to a known default value. "
+            "Set a strong random SECRET_KEY in Replit Secrets before deploying."
+        )
+    _logging.getLogger(__name__).warning(
+        "⚠️  Using default JWT secret — set SECRET_KEY in Replit Secrets before deploying!"
+    )
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 

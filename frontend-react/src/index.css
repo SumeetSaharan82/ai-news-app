@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+    overflow: hidden;
+    background: #080810;
+    color: #f8fafc;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/[0.04] backdrop-blur-xl border border-white/[0.06];
+  }
+  .glass-strong {
+    @apply bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12];
+  }
+  .btn-primary {
+    @apply bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-semibold
+           px-6 py-3 rounded-2xl transition-all duration-200 shadow-glow
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-ghost {
+    @apply text-slate-400 hover:text-white hover:bg-white/[0.06] active:scale-[0.98]
+           px-4 py-2 rounded-xl transition-all duration-200;
+  }
+  .input {
+    @apply w-full bg-white/[0.06] border border-white/[0.08] rounded-2xl px-4 py-3.5
+           text-white placeholder-slate-500 outline-none
+           focus:border-accent/60 focus:bg-white/[0.08] focus:ring-1 focus:ring-accent/30
+           transition-all duration-200;
+  }
+  .card-feed {
+    height: 100dvh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    flex-shrink: 0;
+  }
+  .feed-container {
+    height: 100dvh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+  }
+  .shimmer-bg {
+    background: linear-gradient(90deg, #14141f 25%, #1e1e2e 50%, #14141f 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s linear infinite;
+  }
+  .category-chip {
+    @apply px-4 py-2 rounded-full border text-sm font-medium transition-all duration-200
+           cursor-pointer select-none active:scale-95;
+  }
+  .category-chip.selected {
+    @apply bg-accent border-accent text-white shadow-glow;
+  }
+  .category-chip:not(.selected) {
+    @apply border-white/10 text-slate-400 hover:border-accent/40 hover:text-white bg-white/[0.03];
+  }
+}
+
+/* Feed scroll snap */
+.feed-container > * {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Progress dots */
+.progress-dot {
+  transition: all 0.3s ease;
+}
+
+/* Gradient overlays */
+.image-gradient {
+  background: linear-gradient(to bottom, transparent 40%, rgba(8,8,16,0.7) 70%, #080810 100%);
+}
+
+/* Safe area insets for mobile */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
+.pt-safe { padding-top: env(safe-area-inset-top, 0px); }

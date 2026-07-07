@@ -1,0 +1,3 @@
+- [JWT library policy](jwt-library-policy.md) — use PyJWT for JWT in this project; specific firewall constraint
+- [SQLite engine policy](sqlite-engine-policy.md) — SQLite requires conditional pool arg exclusion in SQLAlchemy
+- [Region code contract](region-code-contract.md) — frontend sends short codes (in/us/gb); backend must map to RSS names

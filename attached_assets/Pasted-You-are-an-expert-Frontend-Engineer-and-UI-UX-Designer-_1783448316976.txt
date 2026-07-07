@@ -1,0 +1,26 @@
+You are an expert Frontend Engineer and UI/UX Designer. Your task is to build a world-class, production-ready, mobile-first Web Application and Progressive Web App (PWA) inspired by "Inshorts." This app will be used for high-stakes investor demos.
+
+You must scan, analyze, and integrate with my existing backend repository here: https://github.com/SumeetSaharan82/ai-news-app Adhere strictly to the backend API contracts, auth mechanisms, and data structures found in the codebase.
+
+### 1. CORE USER FLOWS & FEATURES TO BUILD
+- **Authentication:** Build clean Login/Signup pages that connect to the backend auth. Securely store the auth token.
+- **First-Time Onboarding (Category Selection):** If a newly logged-in user has not selected categories, block the main feed and display a stunning, interactive category selection screen (e.g., Tech, Politics, Business, Sports). Save these choices to the backend immediately.
+- **The Core Feed (Inshorts Style):** 
+  - Display ONLY the news matching the user's selected categories.
+  - Implement a vertical, card-based layout where exactly ONE news brief fills the screen at a time with the pictures from the feeds or original website.
+  - Enable smooth swipe-up/swipe-down gestures (or arrow key/scroll snaps) to navigate between cards and user shoul able to read full story or article which has been pulled. 
+  - Each card must feature a high-resolution image header, a bold headline, a crisp 60-word summary, metadata (source, date), and a "Read More" link to the original article source.
+- **User Profile & Preference Management:** Build a profile section where users can update their selected categories. Saving updates must instantly refresh the core feed.
+
+### 2. DESIGN & UI/UX SPECIFICATIONS (INVESTOR-READY)
+- **Aesthetic:** Ultra-modern, clean, and minimalist. Use a premium dark mode default (or a flawless light/dark toggle).
+- **Layout:** Mobile-first design optimized for mobile viewports, but elegantly centered with max-width constraints on desktop screens.
+- **Micro-interactions:** Add fluid animations for card transitions, skeleton loaders for fetching news, and haptic-like visual feedback on button taps.
+
+### 3. TECHNICAL REQUIREMENTS
+- **Framework:** React / Next.js (optimized for Vercel deployment).
+- **Styling:** Tailwind CSS for clean, maintainable utilities.
+- **State Management & Routing:** Implement robust routing and clean state handling to ensure zero lag during fast swiping.
+- **API Integration:** Create an API service layer that maps directly to the scanned backend repository. Handle edge cases like expired tokens, empty feeds, and network errors gracefully with user-friendly alerts.
+
+Please review the backend repository structure first, confirm your understanding of the API endpoints, and begin building the components step-by-step. Start by generating the core layout and the API integration layer.

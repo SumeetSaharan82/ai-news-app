@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.config.settings import get_settings
-from backend.api.v1 import health, news, categories, auth, notifications, analysis, mobile
+from backend.api.v1 import health, news, categories, auth, notifications, analysis, mobile, usage
 from backend.api import users
 from backend.core.database import init_db
 
@@ -47,15 +47,15 @@ app = FastAPI(
     description="AI-powered news aggregation and analysis platform",
     lifespan=lifespan,
     debug=settings.debug,
-    docs_url="/docs" if settings.debug else None,  # Hide docs in production
-    redoc_url="/redoc" if settings.debug else None
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
-# Configure CORS
+# Configure CORS – allow all origins so Replit preview iframe works
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins + ["null", "file://"],  # Allow file:// protocol for local dev
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -69,6 +69,7 @@ app.include_router(users.router, prefix="/api/v1", tags=["users"])
 app.include_router(notifications.router, prefix="/api/v1", tags=["notifications"])
 app.include_router(analysis.router, prefix="/api/v1", tags=["analysis"])
 app.include_router(mobile.router, prefix="/api/v1", tags=["mobile"])
+app.include_router(usage.router, prefix="/api/v1", tags=["usage"])
 
 
 @app.get("/")

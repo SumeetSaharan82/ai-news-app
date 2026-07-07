@@ -47,16 +47,19 @@ class UserPreferences:
         email_notifications: bool = True,
         dark_mode: bool = False,
         keywords: Optional[list[str]] = None,
+        tier: str = "free",          # free | pro | premium
+        daily_limit: int = 15,       # articles per day for free tier
     ):
         self.categories = categories or ["general"]
         self.regions = regions or ["global"]
-        self.digest_frequency = digest_frequency  # daily, weekly, none
+        self.digest_frequency = digest_frequency
         self.email_notifications = email_notifications
         self.dark_mode = dark_mode
         self.keywords = keywords or []
-    
+        self.tier = tier
+        self.daily_limit = daily_limit if tier == "free" else 999999
+
     def to_dict(self) -> dict:
-        """Convert to dictionary for storage"""
         return {
             "categories": self.categories,
             "regions": self.regions,
@@ -64,11 +67,12 @@ class UserPreferences:
             "email_notifications": self.email_notifications,
             "dark_mode": self.dark_mode,
             "keywords": self.keywords,
+            "tier": self.tier,
+            "daily_limit": self.daily_limit,
         }
-    
+
     @classmethod
     def from_dict(cls, data: dict) -> "UserPreferences":
-        """Create from dictionary"""
         return cls(
             categories=data.get("categories"),
             regions=data.get("regions"),
@@ -76,4 +80,6 @@ class UserPreferences:
             email_notifications=data.get("email_notifications", True),
             dark_mode=data.get("dark_mode", False),
             keywords=data.get("keywords"),
+            tier=data.get("tier", "free"),
+            daily_limit=data.get("daily_limit", 15),
         )

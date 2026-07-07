@@ -1,0 +1,13 @@
+{
+  "name": "Briefed — AI News",
+  "short_name": "Briefed",
+  "description": "AI-powered news in 60 words",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080810",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

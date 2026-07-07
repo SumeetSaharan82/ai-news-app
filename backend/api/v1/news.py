@@ -123,9 +123,11 @@ async def get_personalized_news(
     for category in user_prefs.categories:
         for region in user_prefs.regions:
             try:
+                # Map frontend region codes (e.g. 'in') to RSS source names (e.g. 'india')
+                mapped_region = REGION_CODE_MAP.get(region, region)
                 articles = await fetcher.fetch_all_sources(
                     category=category,
-                    region=region,
+                    region=mapped_region,
                     limit=per_category_limit
                 )
                 all_articles.extend(articles)

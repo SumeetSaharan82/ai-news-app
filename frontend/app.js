@@ -303,7 +303,7 @@ async function loadCurrentUser() {
             if (currentUser.preferences && currentUser.preferences.categories && currentUser.preferences.categories.length > 0) {
                 // User has preferences, load news directly
                 selectedCategories = currentUser.preferences.categories;
-                selectedRegion = currentUser.preferences.region || 'global';
+                selectedRegion = (currentUser.preferences.regions || [currentUser.preferences.region] || ['global'])[0];
                 console.log('Loaded preferences - Categories:', selectedCategories, 'Region:', selectedRegion);
                 document.getElementById('newsSection').classList.remove('hidden');
                 document.getElementById('analysisSection').classList.remove('hidden');
@@ -349,7 +349,7 @@ async function savePreferences() {
             },
             body: JSON.stringify({
                 categories: preferenceCategories,
-                region: preferenceRegion
+                regions: [preferenceRegion]
             })
         });
         
@@ -378,7 +378,7 @@ function showProfileModal() {
     // Load current user preferences
     if (currentUser && currentUser.preferences) {
         profileCategories = currentUser.preferences.categories || [];
-        profileRegion = currentUser.preferences.region || 'global';
+        profileRegion = (currentUser.preferences.regions || [currentUser.preferences.region] || ['global'])[0];
         
         // Select current categories in profile modal
         setTimeout(() => {
@@ -436,7 +436,7 @@ async function updatePreferences() {
             },
             body: JSON.stringify({
                 categories: profileCategories,
-                region: profileRegion
+                regions: [profileRegion]
             })
         });
         
@@ -446,7 +446,7 @@ async function updatePreferences() {
             selectedCategories = profileCategories;
             selectedRegion = profileRegion;
             currentUser.preferences.categories = profileCategories;
-            currentUser.preferences.region = profileRegion;
+            currentUser.preferences.regions = [profileRegion];
             console.log('Preferences updated successfully - Selected Region:', selectedRegion);
             closeProfileModal();
             loadNews();

@@ -34,6 +34,7 @@ class UserPreferencesUpdate(BaseModel):
     email_notifications: Optional[bool] = None
     dark_mode: Optional[bool] = None
     keywords: Optional[List[str]] = None
+    # NOTE: tier is NOT settable by users — only via verified payment webhook (/api/v1/usage/update-tier)
 
 
 @router.get("/users/profile", response_model=UserProfile)
@@ -118,7 +119,6 @@ async def update_user_preferences(
         current_prefs.dark_mode = preferences_update.dark_mode
     if preferences_update.keywords is not None:
         current_prefs.keywords = preferences_update.keywords
-    
     # Save to database
     current_user.preferences = current_prefs.to_dict()
     current_user.updated_at = datetime.utcnow()

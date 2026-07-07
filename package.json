@@ -1,0 +1,29 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "An AI-powered news aggregation and analysis platform that fetches news from multiple sources (APIs and RSS feeds), extracts content, and processes it with LLMs to provide clean, factual summaries without opinions....",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vitejs/plugin-react": "^6.0.3",
+    "autoprefixer": "^10.5.2",
+    "axios": "^1.18.1",
+    "framer-motion": "^12.42.2",
+    "lucide-react": "^1.23.0",
+    "postcss": "^8.5.16",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.1",
+    "tailwindcss": "^4.3.2",
+    "vite": "^8.1.3",
+    "zustand": "^5.0.14"
+  }
+}
