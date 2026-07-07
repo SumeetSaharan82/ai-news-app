@@ -65,12 +65,12 @@ async def get_rss_news(
     Returns articles from RSS sources with optional filtering
     """
     try:
-        fetcher = RSSFetcher()
-        articles = await fetcher.fetch_all_sources(
-            category=category,
-            region=region,
-            limit=limit
-        )
+        async with RSSFetcher() as fetcher:
+            articles = await fetcher.fetch_all_sources(
+                category=category,
+                region=region,
+                limit=limit
+            )
         
         # Convert to response format
         article_list = []
@@ -115,23 +115,23 @@ async def get_personalized_news(
     
     # Fetch news for each preferred category and region
     all_articles = []
-    fetcher = RSSFetcher()
     
     # Limit per category to avoid too many articles
     per_category_limit = max(1, limit // max(len(user_prefs.categories), 1))
     
-    for category in user_prefs.categories:
-        for region in user_prefs.regions:
-            try:
-                articles = await fetcher.fetch_all_sources(
-                    category=category,
-                    region=region,
-                    limit=per_category_limit
-                )
-                all_articles.extend(articles)
-            except Exception as e:
-                # Continue with other categories if one fails
-                continue
+    async with RSSFetcher() as fetcher:
+        for category in user_prefs.categories:
+            for region in user_prefs.regions:
+                try:
+                    articles = await fetcher.fetch_all_sources(
+                        category=category,
+                        region=region,
+                        limit=per_category_limit
+                    )
+                    all_articles.extend(articles)
+                except Exception as e:
+                    # Continue with other categories if one fails
+                    continue
     
     # Remove duplicates based on URL
     unique_articles = {}
@@ -210,12 +210,12 @@ async def get_news(
         # Map region code to full name for RSS sources
         mapped_region = REGION_CODE_MAP.get(region, region)
         
-        fetcher = RSSFetcher()
-        articles = await fetcher.fetch_all_sources(
-            category=category,
-            region=mapped_region,
-            limit=per_page * 2  # Fetch more for filtering
-        )
+        async with RSSFetcher() as fetcher:
+            articles = await fetcher.fetch_all_sources(
+                category=category,
+                region=mapped_region,
+                limit=per_page * 2  # Fetch more for filtering
+            )
         
         # Apply advanced filters
         filtered_articles = []

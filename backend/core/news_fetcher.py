@@ -246,6 +246,13 @@ class NYTFetcher:
                         }
                         category = category_map.get(section, "general")
 
+                        # Parse published date safely
+                        published_date = article.get("published_date", "")
+                        try:
+                            published_at = datetime.fromisoformat(published_date)
+                        except ValueError:
+                            published_at = datetime.utcnow()
+
                         news_article = NewsArticle(
                             title=article.get("title", ""),
                             description=article.get("abstract", ""),
@@ -254,9 +261,7 @@ class NYTFetcher:
                             image_url=image_url,
                             source_name="New York Times",
                             source_id="nyt",
-                            published_at=datetime.fromisoformat(
-                                article.get("published_date", "")
-                            ),
+                            published_at=published_at,
                             category=category,
                             author=article.get("byline", ""),
                         )
@@ -324,6 +329,13 @@ class GuardianFetcher:
 
                 for article in data.get("response", {}).get("results", []):
                     try:
+                        # Parse published date safely
+                        pub_date = article.get("webPublicationDate", "")
+                        try:
+                            published_at = datetime.fromisoformat(pub_date.replace("Z", "+00:00"))
+                        except ValueError:
+                            published_at = datetime.utcnow()
+
                         news_article = NewsArticle(
                             title=article.get("webTitle", ""),
                             description=article.get("fields", {}).get("trailText", ""),
@@ -331,9 +343,7 @@ class GuardianFetcher:
                             image_url=article.get("fields", {}).get("thumbnail", ""),
                             source_name="The Guardian",
                             source_id="guardian",
-                            published_at=datetime.fromisoformat(
-                                article.get("webPublicationDate", "").replace("Z", "+00:00")
-                            ),
+                            published_at=published_at,
                             category=section,
                             author=article.get("fields", {}).get("byline", ""),
                         )
