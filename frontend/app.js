@@ -1,7 +1,7 @@
 // API Configuration
 const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.protocol === 'file:')
     ? 'http://localhost:8000/api/v1'
-    : (window.env?.NEXT_PUBLIC_API_URL || 'https://your-railway-app.railway.app/api/v1');
+    : (window.env?.NEXT_PUBLIC_API_URL || 'https://web-production-e800ff.up.railway.app/api/v1');
 
 // State
 let selectedCategories = [];
