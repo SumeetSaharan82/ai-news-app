@@ -170,12 +170,12 @@ function selectProfileRegion(region, element) {
 }
 
 // Load News for all selected categories
-async function loadNews(limit = 5) {
+async function loadNews(limit = 5, forceRefresh = false) {
     if (selectedCategories.length === 0) {
         showError('Please select at least one category');
         return;
     }
-    
+
     showLoading(true);
     hideError();
 
@@ -190,17 +190,17 @@ async function loadNews(limit = 5) {
         'global': 'global'
     };
     const region = regionMap[selectedRegion] || selectedRegion;
-    
-    console.log('Loading news for all categories - Categories:', selectedCategories, 'Region:', region, 'Limit:', limit);
+
+    console.log('Loading news for all categories - Categories:', selectedCategories, 'Region:', region, 'Limit:', limit, 'Force Refresh:', forceRefresh);
 
     try {
         // Fetch news for each category
         const newsPromises = selectedCategories.map(async (category) => {
             const cacheKey = `${category}-${region}-${limit}`;
 
-            // Check cache first
+            // Check cache first (unless force refresh)
             const cached = newsCache.get(cacheKey);
-            if (cached && (Date.now() - cached.timestamp) < CACHE_EXPIRY) {
+            if (!forceRefresh && cached && (Date.now() - cached.timestamp) < CACHE_EXPIRY) {
                 console.log(`Using cached news for ${category}`);
                 return { category, articles: cached.articles };
             }
@@ -608,7 +608,7 @@ async function savePreferences() {
 
             // Force news reload with new preferences (5 articles per category)
             console.log('Triggering news reload with new preferences...');
-            await loadNews(5);
+            await loadNews(5, true);
 
             alert('Preferences saved successfully!');
         } else {
@@ -708,8 +708,8 @@ async function updatePreferences() {
 
             // Force news reload with new preferences (5 articles per category)
             console.log('Triggering news reload with new preferences...');
-            await loadNews(5);
-            
+            await loadNews(5, true);
+
             alert('Preferences updated successfully!');
         } else {
             console.error('Failed to update preferences - Response:', await response.text());
@@ -771,7 +771,7 @@ function setupEventListeners() {
     document.getElementById('updatePreferencesBtn').addEventListener('click', updatePreferences);
     
     // Refresh button
-    document.getElementById('refreshBtn').addEventListener('click', () => loadNews(5));
+    document.getElementById('refreshBtn').addEventListener('click', () => loadNews(5, true));
 
     // Customize preferences button
     document.getElementById('customizePreferencesBtn').addEventListener('click', () => {
