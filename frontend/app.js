@@ -863,11 +863,13 @@ async function handleAuth(e) {
             alert(authMode === 'login' ? 'Login successful!' : 'Registration successful!');
         } else {
             console.error('Auth failed:', data);
-            alert(data.detail || 'Authentication failed');
+            const errorMessage = data.detail || (typeof data === 'object' ? JSON.stringify(data) : 'Authentication failed');
+            alert(errorMessage);
         }
     } catch (error) {
         console.error('Auth error:', error);
-        alert('Authentication failed. Please try again.');
+        const errorMessage = error.message || 'Authentication failed. Please try again.';
+        alert(errorMessage);
     }
 }
 
