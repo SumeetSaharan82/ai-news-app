@@ -252,6 +252,8 @@ function displayNewsByCategory(results) {
     newsContainer.innerHTML = '';
 
     results.forEach(({ category, articles }) => {
+        console.log(`Processing category: ${category}, articles count: ${articles.length}`);
+
         // Create category section
         const categorySection = document.createElement('div');
         categorySection.className = 'category-section';
@@ -279,6 +281,8 @@ function displayNewsByCategory(results) {
                     uniqueArticles.push(article);
                 }
             });
+
+            console.log(`Unique articles for ${category}: ${uniqueArticles.length}`);
 
             uniqueArticles.forEach((article, index) => {
                 const newsCard = document.createElement('div');
