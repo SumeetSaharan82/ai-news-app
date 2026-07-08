@@ -662,22 +662,28 @@ class RSSFetcher:
 
             # Extract image - try multiple methods
             image_url = ""
-            
+
             # Method 1: media_content
             if entry.get("media_content"):
-                image_url = entry["media_content"][0].get("url", "")
-            
+                media_content = entry["media_content"]
+                if isinstance(media_content, list) and len(media_content) > 0:
+                    image_url = media_content[0].get("url", "")
+
             # Method 2: image href
             elif entry.get("image"):
-                image_url = entry["image"].get("href", "")
-            
+                image = entry["image"]
+                if isinstance(image, dict):
+                    image_url = image.get("href", "")
+                else:
+                    image_url = str(image)
+
             # Method 3: enclosures (common in RSS)
             elif entry.get("enclosures"):
                 for enclosure in entry["enclosures"]:
                     if enclosure.get("type", "").startswith("image/"):
                         image_url = enclosure.get("href", "")
                         break
-            
+
             # Method 4: extract from description/summary HTML
             if not image_url and description:
                 from bs4 import BeautifulSoup
@@ -685,7 +691,7 @@ class RSSFetcher:
                 img_tag = soup.find("img")
                 if img_tag and img_tag.get("src"):
                     image_url = img_tag.get("src")
-            
+
             # Method 5: try content field
             if not image_url and entry.get("content"):
                 content = entry["content"][0] if isinstance(entry["content"], list) else entry["content"]
@@ -695,6 +701,25 @@ class RSSFetcher:
                     img_tag = soup.find("img")
                     if img_tag and img_tag.get("src"):
                         image_url = img_tag.get("src")
+
+            # Method 6: try media:thumbnail
+            if not image_url and hasattr(entry, 'get') and entry.get('media_thumbnail'):
+                thumbnail = entry['media_thumbnail']
+                if isinstance(thumbnail, list) and len(thumbnail) > 0:
+                    image_url = thumbnail[0].get('url', '')
+                elif isinstance(thumbnail, dict):
+                    image_url = thumbnail.get('url', '')
+
+            # Clean up image URL
+            if image_url:
+                # Handle protocol-relative URLs
+                if image_url.startswith("//"):
+                    image_url = "https:" + image_url
+                # Handle relative URLs
+                elif image_url.startswith("/"):
+                    from urllib.parse import urlparse
+                    parsed_url = urlparse(url)
+                    image_url = f"{parsed_url.scheme}://{parsed_url.netloc}{image_url}"
 
             # Extract author
             author = entry.get("author", "")
