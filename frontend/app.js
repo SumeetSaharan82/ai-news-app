@@ -394,11 +394,11 @@ function showArticleModal(article) {
     const modal = document.getElementById('articleModal');
     const content = document.getElementById('articleContent');
     const openInNewTabBtn = document.getElementById('openInNewTabBtn');
-    
+
     // Clean up content (remove HTML tags for better display)
     const cleanDescription = article.description ? article.description.replace(/<[^>]*>/g, '') : 'No description available';
     const cleanContent = article.content ? article.content.replace(/<[^>]*>/g, '') : '';
-    
+
     content.innerHTML = `
         ${article.image_url ? `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">` : ''}
         <h2 class="article-headline">${article.title}</h2>
@@ -411,10 +411,13 @@ function showArticleModal(article) {
             <p class="article-description">${cleanDescription}</p>
             ${cleanContent ? `<p class="article-full-content">${cleanContent}</p>` : ''}
         </div>
+        <div class="article-read-more">
+            <a href="${article.url}" target="_blank" class="read-more-link">Read Full Article →</a>
+        </div>
     `;
-    
+
     openInNewTabBtn.onclick = () => window.open(article.url, '_blank');
-    
+
     modal.classList.remove('hidden');
 }
 
