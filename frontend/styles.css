@@ -707,11 +707,151 @@ section h2 {
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
-    color: #999;
+    color: var(--text-muted);
+    transition: color 0.3s ease;
 }
 
 .close:hover {
-    color: #333;
+    color: var(--text-primary);
+}
+
+/* Mobile-First Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+
+    .header {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .header h1 {
+        font-size: 22px;
+    }
+
+    .auth-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+
+    section {
+        padding: 20px;
+    }
+
+    section h2 {
+        font-size: 20px;
+    }
+
+    .news-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .news-card {
+        border-radius: 12px;
+    }
+
+    .news-card img {
+        height: 200px;
+    }
+
+    .news-card-content {
+        padding: 20px;
+    }
+
+    .news-card .title {
+        font-size: 1.2rem;
+    }
+
+    .news-card .description {
+        font-size: 0.95rem;
+        -webkit-line-clamp: 4;
+    }
+
+    .category-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    .category-title {
+        font-size: 1.3rem;
+    }
+
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        padding: 20px;
+    }
+
+    .article-content {
+        max-width: 100%;
+    }
+
+    .article-content .article-headline {
+        font-size: 1.5rem;
+    }
+
+    .article-content img {
+        max-height: 300px;
+        object-fit: cover;
+    }
+
+    .read-more-link {
+        width: 100%;
+        text-align: center;
+    }
+
+    .preference-prompt {
+        padding: 20px;
+    }
+
+    .preference-prompt h3 {
+        font-size: 1.2rem;
+    }
+
+    .preference-prompt p {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 18px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .news-card img {
+        height: 180px;
+    }
+
+    .news-card-content {
+        padding: 16px;
+    }
+
+    .news-card .title {
+        font-size: 1.1rem;
+    }
+
+    .news-card .description {
+        font-size: 0.9rem;
+        -webkit-line-clamp: 3;
+    }
+
+    .category-title {
+        font-size: 1.2rem;
+    }
 }
 
 .form-group {
