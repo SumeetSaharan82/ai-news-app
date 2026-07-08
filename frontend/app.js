@@ -178,7 +178,10 @@ async function loadNews(limit = 5) {
     
     showLoading(true);
     hideError();
-    
+
+    // Show skeleton loaders while fetching
+    showSkeletonLoaders();
+
     // Map region codes to full names
     const regionMap = {
         'in': 'india',
@@ -247,17 +250,17 @@ function displayNewsByCategory(results) {
         return;
     }
     newsContainer.innerHTML = '';
-    
+
     results.forEach(({ category, articles }) => {
         // Create category section
         const categorySection = document.createElement('div');
         categorySection.className = 'category-section';
-        
+
         const categoryTitle = document.createElement('h3');
         categoryTitle.className = 'category-title';
         categoryTitle.innerHTML = `${categoryIcons[category] || '📰'} ${category.charAt(0).toUpperCase() + category.slice(1)}`;
         categorySection.appendChild(categoryTitle);
-        
+
         if (articles.length === 0) {
             const noArticles = document.createElement('p');
             noArticles.className = 'no-articles';
@@ -266,10 +269,11 @@ function displayNewsByCategory(results) {
         } else {
             const categoryGrid = document.createElement('div');
             categoryGrid.className = 'category-grid';
-            
-            articles.forEach(article => {
+
+            articles.forEach((article, index) => {
                 const newsCard = document.createElement('div');
                 newsCard.className = 'news-card';
+                newsCard.style.animationDelay = `${index * 0.1}s`;
                 newsCard.innerHTML = `
                     ${article.image_url ? `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">` : ''}
                     <div class="news-card-content">
@@ -282,17 +286,70 @@ function displayNewsByCategory(results) {
                         </div>
                     </div>
                 `;
-                newsCard.addEventListener('click', () => showArticleModal(article));
+                newsCard.addEventListener('click', () => {
+                    addHapticFeedback(newsCard);
+                    showArticleModal(article);
+                });
                 categoryGrid.appendChild(newsCard);
             });
-            
+
             categorySection.appendChild(categoryGrid);
         }
-        
+
         newsContainer.appendChild(categorySection);
     });
-    
+
     console.log('News displayed by category successfully');
+}
+
+// Show Skeleton Loaders
+function showSkeletonLoaders() {
+    const newsContainer = document.getElementById('newsContainer');
+    if (!newsContainer) return;
+
+    newsContainer.innerHTML = '';
+
+    selectedCategories.forEach((category, categoryIndex) => {
+        const categorySection = document.createElement('div');
+        categorySection.className = 'category-section';
+
+        const categoryTitle = document.createElement('h3');
+        categoryTitle.className = 'category-title';
+        categoryTitle.innerHTML = `${categoryIcons[category] || '📰'} ${category.charAt(0).toUpperCase() + category.slice(1)}`;
+        categorySection.appendChild(categoryTitle);
+
+        const categoryGrid = document.createElement('div');
+        categoryGrid.className = 'category-grid';
+
+        // Show 5 skeleton cards per category
+        for (let i = 0; i < 5; i++) {
+            const skeletonCard = document.createElement('div');
+            skeletonCard.className = 'skeleton-card';
+            skeletonCard.innerHTML = `
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton skeleton-category"></div>
+                    <div class="skeleton skeleton-title"></div>
+                    <div class="skeleton skeleton-description"></div>
+                    <div class="skeleton skeleton-description"></div>
+                    <div class="skeleton skeleton-description"></div>
+                    <div class="skeleton skeleton-meta"></div>
+                </div>
+            `;
+            categoryGrid.appendChild(skeletonCard);
+        }
+
+        categorySection.appendChild(categoryGrid);
+        newsContainer.appendChild(categorySection);
+    });
+}
+
+// Add Haptic-like Visual Feedback
+function addHapticFeedback(element) {
+    element.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        element.style.transform = '';
+    }, 100);
 }
 
 // Display News (legacy function for single category)
