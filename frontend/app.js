@@ -826,33 +826,35 @@ function closeAuthModal() {
 
 async function handleAuth(e) {
     e.preventDefault();
-    
+
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const name = document.getElementById('name').value;
-    
-    const formData = new URLSearchParams();
-    formData.append('username', email);
-    formData.append('password', password);
-    if (name && authMode === 'register') {
-        formData.append('scope', name);  // Use scope to pass name for registration
+
+    const payload = {
+        email: email,
+        password: password
+    };
+
+    if (authMode === 'register' && name) {
+        payload.name = name;
     }
-    
+
     const endpoint = authMode === 'login' ? '/auth/login' : '/auth/register';
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/json'
             },
-            body: formData
+            body: JSON.stringify(payload)
         });
-        
+
         const data = await response.json();
-        
+
         console.log('Auth response:', response.status, data);
-        
+
         if (response.ok) {
             authToken = data.access_token;
             localStorage.setItem('authToken', authToken);

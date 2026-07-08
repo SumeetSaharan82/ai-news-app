@@ -82,19 +82,19 @@ def get_current_user(
 
 @router.post("/auth/register", response_model=TokenResponse)
 async def register(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    user_data: UserRegister,
     db: Session = Depends(get_db)
 ):
     """
     Register a new user
-    Accepts form data: username (email), password, and name (optional)
+    Accepts JSON data: email, password, and name (optional)
     """
     import logging
     logger = logging.getLogger(__name__)
-    
-    email = form_data.username
-    password = form_data.password
-    name = form_data.scopes[0] if form_data.scopes else None  # Use scopes to pass name
+
+    email = user_data.email
+    password = user_data.password
+    name = user_data.name
     
     logger.info(f"Registration attempt - Email: {email}, Name: {name}, Has password: {bool(password)}")
     
@@ -153,15 +153,15 @@ async def register(
 
 @router.post("/auth/login", response_model=TokenResponse)
 async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    user_data: UserLogin,
     db: Session = Depends(get_db)
 ):
     """
     Login user and return access token
     """
-    user = db.query(User).filter(User.email == form_data.username).first()
-    
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    user = db.query(User).filter(User.email == user_data.email).first()
+
+    if not user or not verify_password(user_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
