@@ -270,7 +270,17 @@ function displayNewsByCategory(results) {
             const categoryGrid = document.createElement('div');
             categoryGrid.className = 'category-grid';
 
-            articles.forEach((article, index) => {
+            // Remove duplicates based on URL
+            const uniqueArticles = [];
+            const seenUrls = new Set();
+            articles.forEach(article => {
+                if (!seenUrls.has(article.url)) {
+                    seenUrls.add(article.url);
+                    uniqueArticles.push(article);
+                }
+            });
+
+            uniqueArticles.forEach((article, index) => {
                 const newsCard = document.createElement('div');
                 newsCard.className = 'news-card';
                 newsCard.style.animationDelay = `${index * 0.1}s`;
