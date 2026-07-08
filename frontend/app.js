@@ -284,12 +284,18 @@ function displayNewsByCategory(results) {
                 const newsCard = document.createElement('div');
                 newsCard.className = 'news-card';
                 newsCard.style.animationDelay = `${index * 0.1}s`;
+
+                // Strip HTML tags from description to prevent embedded images
+                const cleanDescription = article.description
+                    ? article.description.replace(/<[^>]*>/g, '').trim()
+                    : 'No description available';
+
                 newsCard.innerHTML = `
                     ${article.image_url ? `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">` : ''}
                     <div class="news-card-content">
                         <span class="category">${article.category}</span>
                         <h3 class="title">${article.title}</h3>
-                        <p class="description">${article.description || 'No description available'}</p>
+                        <p class="description">${cleanDescription}</p>
                         <div class="meta">
                             <span class="source">${article.source}</span>
                             <span class="date">${formatDate(article.published_at)}</span>
