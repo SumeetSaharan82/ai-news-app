@@ -575,11 +575,21 @@ class RSSFetcher:
             elif isinstance(result, Exception):
                 logger.error(f"Error in fetch task: {result}")
 
-        # Remove duplicates based on URL
+        # Remove duplicates based on URL and title
         unique_articles = {}
         for article in all_articles:
-            if article.url not in unique_articles:
-                unique_articles[article.url] = article
+            # Create a unique key based on both URL and title
+            # This handles cases where same article appears from different sources
+            url_key = article.url
+            title_key = article.title.lower().strip()
+
+            # Use URL as primary key
+            if url_key not in unique_articles:
+                unique_articles[url_key] = article
+            # Check for title duplicates (same article with different URL)
+            elif title_key not in [a.title.lower().strip() for a in unique_articles.values()]:
+                # Only add if title is unique (different article)
+                unique_articles[url_key] = article
 
         # Sort by published date (most recent first)
         sorted_articles = sorted(
