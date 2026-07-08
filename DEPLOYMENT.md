@@ -144,23 +144,15 @@ You should see:
    - **Name**: `NEXT_PUBLIC_API_URL`
    - **Value**: `https://your-railway-app.railway.app`
 
-### 3.4 Update Frontend Code
+**Note:** The frontend code is already configured to use this environment variable. No code changes needed.
 
-Edit `frontend/app.js` line 2-4:
-
-```javascript
-const API_BASE_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:8000/api/v1'
-    : 'https://your-railway-app.railway.app/api/v1';
-```
-
-### 3.5 Redeploy Frontend
+### 3.4 Redeploy Frontend
 
 1. Go to your Vercel project
 2. Click "Deployments"
 3. Click the three dots → "Redeploy"
 
-### 3.6 Get Your Frontend URL
+### 3.5 Get Your Frontend URL
 
 1. Go to your Vercel project
 2. Copy the domain (e.g., `https://your-app.vercel.app`)
