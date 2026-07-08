@@ -761,7 +761,7 @@ function setupEventListeners() {
     document.getElementById('updatePreferencesBtn').addEventListener('click', updatePreferences);
     
     // Refresh button
-    document.getElementById('refreshBtn').addEventListener('click', loadNews);
+    document.getElementById('refreshBtn').addEventListener('click', () => loadNews(5));
 
     // Customize preferences button
     document.getElementById('customizePreferencesBtn').addEventListener('click', () => {
