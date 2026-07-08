@@ -168,6 +168,20 @@ RSS_SOURCES = [
         source_id="espn-cricket-rss",
     ),
     RSSSource(
+        name="BBC Sport",
+        url="http://feeds.bbci.co.uk/sport/rss.xml",
+        category="sports",
+        region="global",
+        source_id="bbc-sport-global-rss",
+    ),
+    RSSSource(
+        name="Reuters Sports",
+        url="https://www.reuters.com/rssFeed/sportsNews",
+        category="sports",
+        region="global",
+        source_id="reuters-sports-rss",
+    ),
+    RSSSource(
         name="ESPN Sports",
         url="https://www.espn.com/espn/rss/news",
         category="sports",
@@ -203,6 +217,27 @@ RSS_SOURCES = [
         region="india",
         source_id="hindu-science-rss",
     ),
+    RSSSource(
+        name="Science Daily",
+        url="https://www.sciencedaily.com/rss/top.xml",
+        category="science",
+        region="global",
+        source_id="science-daily-rss",
+    ),
+    RSSSource(
+        name="Nature News",
+        url="https://www.nature.com/nature/rss/current.xml",
+        category="science",
+        region="global",
+        source_id="nature-rss",
+    ),
+    RSSSource(
+        name="Science Magazine",
+        url="https://www.science.org/rss/news_current.xml",
+        category="science",
+        region="global",
+        source_id="science-mag-rss",
+    ),
     # Entertainment
     RSSSource(
         name="NDTV Entertainment",
@@ -219,6 +254,20 @@ RSS_SOURCES = [
         source_id="toi-ent-rss",
     ),
     RSSSource(
+        name="BBC Entertainment",
+        url="https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml",
+        category="entertainment",
+        region="global",
+        source_id="bbc-ent-global-rss",
+    ),
+    RSSSource(
+        name="Reuters Entertainment",
+        url="https://www.reuters.com/rssFeed/lifestyle",
+        category="entertainment",
+        region="global",
+        source_id="reuters-ent-rss",
+    ),
+    RSSSource(
         name="Bollywood Hungama",
         url="https://www.bollywoodhungama.com/feed/news/",
         category="entertainment",
@@ -231,6 +280,20 @@ RSS_SOURCES = [
         category="politics",
         region="india",
         source_id="toi-politics-rss",
+    ),
+    RSSSource(
+        name="BBC Politics",
+        url="https://feeds.bbci.co.uk/news/politics/rss.xml",
+        category="politics",
+        region="global",
+        source_id="bbc-politics-global-rss",
+    ),
+    RSSSource(
+        name="Reuters Politics",
+        url="https://www.reuters.com/rssFeed/politicsNews",
+        category="politics",
+        region="global",
+        source_id="reuters-politics-rss",
     ),
     RSSSource(
         name="The Hindu - Politics",
