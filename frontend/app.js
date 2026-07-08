@@ -419,6 +419,9 @@ function showArticleModal(article) {
     const cleanDescription = article.description ? article.description.replace(/<[^>]*>/g, '') : 'No description available';
     const cleanContent = article.content ? article.content.replace(/<[^>]*>/g, '') : '';
 
+    // Check if description and content are the same to avoid duplication
+    const isDuplicateContent = cleanDescription === cleanContent || cleanContent.includes(cleanDescription);
+
     content.innerHTML = `
         ${article.image_url ? `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">` : ''}
         <h2 class="article-headline">${article.title}</h2>
@@ -429,7 +432,7 @@ function showArticleModal(article) {
         </div>
         <div class="article-body">
             <p class="article-description">${cleanDescription}</p>
-            ${cleanContent ? `<p class="article-full-content">${cleanContent}</p>` : ''}
+            ${cleanContent && !isDuplicateContent ? `<p class="article-full-content">${cleanContent}</p>` : ''}
         </div>
         <div class="article-read-more">
             <a href="${article.url}" target="_blank" class="read-more-link">Read Full Article →</a>
